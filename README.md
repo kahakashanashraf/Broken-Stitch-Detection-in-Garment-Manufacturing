@@ -15,7 +15,8 @@ This repository contains a modern **PyTorch reconstruction** of CNN/VGG-16 exper
 | Historical thesis figures (10 extracted images) | [`paper/figures/`](paper/figures/) | Uploaded; historical figures, not new experimental evidence |
 | Six-page IEEE paper PDF (anonymous working draft) | [`paper/ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf`](paper/ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf) | Uploaded, compiled in GitHub Actions; NOT submission-cleared |
 | IEEE manuscript LaTeX | [`paper/main.tex`](paper/main.tex) | Uploaded |
-| Original/reconstructed trained model weights | [`models/README.md`](models/README.md) | **Unavailable — no genuine checkpoints were found** |
+| Original 2022 weights | [`models/README.md`](models/README.md) | **Not recovered** |
+| Newly trained reconstructed CNN weights | [Exploratory model release](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/exploratory-cnn-candidate-family-v1) | **Trained but FAILED normal recall and not publication-ready** |
 
 > **Research caveat:** The historical thesis reports **94.91% validation accuracy** for its final VGG-16 configuration; this has **not been reproduced** on a verified source-disjoint split. No new real-data or StitchingNet accuracy is claimed. Public data access alone does not establish permission for third-party reuse; see [data provenance and license notes](docs/DATA_AND_LICENSE.md).
 
@@ -39,7 +40,7 @@ cd code
 python -m pytest -q
 ```
 
-**12 automated tests passed** on synthetic fixtures in the linked GitHub Actions CI; this is software validation, not a new accuracy result.
+**13 automated tests passed** on synthetic fixtures in the linked GitHub Actions CI; this is software validation, not a new accuracy result.
 
 ## Next scientific steps
 
@@ -52,3 +53,12 @@ python -m pytest -q
 ### Anonymity and intellectual-property notice
 
 This is a publicly attributable repository and may compromise strict double-blind submission if linked from the paper. Human authors must confirm image provenance, ownership, publishing permissions, and ICEEICT policies. **No blanket dataset, image or code license has been granted merely by making these files public.**
+
+
+## Current critical audit finding and new weights (18 Oct 2026)
+
+[Dataset inventory](audits/original_dataset_inventory_2026_10_18.json) found **7,365 images** with one unreadable file. [Family collision audit](audits/candidate_parent_overlap_2026_10_18.json) found that **all 182 candidate original-image filename families** appear across the original train/validation/test folders; **do not use the original partition as an independent test**.
+
+A [new provisional group-exclusive SmallCNN run](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/exploratory-cnn-candidate-family-v1) was completed from scratch on the actual ZIP (7,364 readable images). Training succeeded and authentic `best.pt` exists, but the **exploratory test** had accuracy 57.38%, macro-F1 36.46%, and normal recall **0%** (all 369 normal test examples misidentified). It is **not** a functional stitch-detector and does **not** reproduce the thesis's historical 94.91% validation accuracy.
+
+See [full current status](docs/CURRENT_STATUS.md) and [model documentation](models/README.md). True photographed-source linkage and independent StitchingNet evaluation remain unsolved.
