@@ -1,0 +1,878 @@
+{
+  "images_with_recognized_split_and_label": 7365,
+  "name_patterns": {
+    "uuid_augmentation_pattern": 7365
+  },
+  "candidate_parent_groups": 182,
+  "candidate_parent_groups_crossing_splits": 182,
+  "potential_leakage_images": 7365,
+  "potential_leakage_fraction": 1.0,
+  "potential_leakage_by_split": {
+    "train": 3201,
+    "val": 2280,
+    "test": 1884
+  },
+  "potential_leakage_by_label": {
+    "actual": 2734,
+    "faulty": 4631
+  },
+  "potential_leakage_examples": [
+    {
+      "candidate_source": "actual_original_ah.png",
+      "split_counts": {
+        "train": 63,
+        "val": 28,
+        "test": 15
+      },
+      "label_counts": {
+        "actual": 106,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AH.png_076a3117-3a22-479d-8fa4-93b4028b9256.png",
+        "dataset/test/actual/actual_original_AH.png_0bf4345f-1fd1-47a2-a40b-c17b82c31168.png",
+        "dataset/test/actual/actual_original_AH.png_41337047-67d0-4168-861b-d876673ab9af.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_an.png",
+      "split_counts": {
+        "train": 70,
+        "val": 17,
+        "test": 14
+      },
+      "label_counts": {
+        "actual": 101,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AN.png_1df488da-5656-4542-854a-a81b4c067522.png",
+        "dataset/test/actual/actual_original_AN.png_2afbe0cc-5338-4431-bf88-bf866dce4e8b.png",
+        "dataset/test/actual/actual_original_AN.png_39f38a90-cc15-4f02-a2fe-bfa278059cdd.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ad.png",
+      "split_counts": {
+        "train": 61,
+        "val": 23,
+        "test": 16
+      },
+      "label_counts": {
+        "actual": 100,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AD.png_02c39c1d-0834-46e4-bdb0-3a3985834150.png",
+        "dataset/test/actual/actual_original_AD.png_44ed670e-3b31-4443-9374-edcb4f584c81.png",
+        "dataset/test/actual/actual_original_AD.png_4b6efbd3-d020-43c2-a162-8ad290eb185c.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ay.png",
+      "split_counts": {
+        "train": 60,
+        "val": 28,
+        "test": 11
+      },
+      "label_counts": {
+        "actual": 99,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AY.png_012af822-c778-4330-8c64-2940b1fb0466.png",
+        "dataset/test/actual/actual_original_AY.png_0a1a8b3b-df30-45e3-8d8e-97c528f25193.png",
+        "dataset/test/actual/actual_original_AY.png_30e7960a-0c9f-461d-9f45-792cd716dc2a.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ab.png",
+      "split_counts": {
+        "train": 61,
+        "val": 26,
+        "test": 11
+      },
+      "label_counts": {
+        "actual": 98,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AB.png_0992482b-2633-4ce2-85ff-20626d9c2489.png",
+        "dataset/test/actual/actual_original_AB.png_1a3657b3-985e-47b6-adfb-e5324baf56f0.png",
+        "dataset/test/actual/actual_original_AB.png_24f5a1cd-826f-4ad3-8017-9b79521b46b4.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_aj.png",
+      "split_counts": {
+        "train": 54,
+        "val": 28,
+        "test": 14
+      },
+      "label_counts": {
+        "actual": 96,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AJ.png_0d035ab3-2bb5-455b-8978-16217e170717.png",
+        "dataset/test/actual/actual_original_AJ.png_14137f3a-a341-4adf-b37a-75a3403dc110.png",
+        "dataset/test/actual/actual_original_AJ.png_24c761ec-58b6-4cd5-8001-646f525a8235.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ba.png",
+      "split_counts": {
+        "train": 66,
+        "val": 22,
+        "test": 8
+      },
+      "label_counts": {
+        "actual": 96,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_BA.png_0919bad2-81bd-4ed2-83ac-9500eaf7ab60.png",
+        "dataset/test/actual/actual_original_BA.png_622ee66f-8cd2-4a14-af5e-89a18721b9c4.png",
+        "dataset/test/actual/actual_original_BA.png_7d8174b5-2085-45da-92dc-5ff951a56a72.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_av.png",
+      "split_counts": {
+        "train": 59,
+        "val": 27,
+        "test": 8
+      },
+      "label_counts": {
+        "actual": 94,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AV.png_13a5198e-4889-4ff6-bea8-0d1227a8ecab.png",
+        "dataset/test/actual/actual_original_AV.png_15fd058f-ce9a-4ae2-9ec7-9b455893fc7f.png",
+        "dataset/test/actual/actual_original_AV.png_4a1a3de8-2f7d-4142-b4c7-80a306d78230.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_af.png",
+      "split_counts": {
+        "train": 61,
+        "val": 20,
+        "test": 12
+      },
+      "label_counts": {
+        "actual": 93,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AF.png_1279bac5-b2d0-4c11-82da-86a2c1b698be.png",
+        "dataset/test/actual/actual_original_AF.png_1eb5b6d6-d5b1-4f2b-b7d9-183ad5d16d26.png",
+        "dataset/test/actual/actual_original_AF.png_239bd4de-6946-4a1c-b64d-6a212819819a.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ax.png",
+      "split_counts": {
+        "train": 63,
+        "val": 19,
+        "test": 10
+      },
+      "label_counts": {
+        "actual": 92,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AX.png_27a933d2-f31c-49a6-9bd1-04791d2ddd6d.png",
+        "dataset/test/actual/actual_original_AX.png_6d615487-9b12-4348-ac5b-911ee47f883e.png",
+        "dataset/test/actual/actual_original_AX.png_7f95fefd-2887-4e6f-9faf-b3a63ee54145.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_bb.png",
+      "split_counts": {
+        "train": 56,
+        "val": 22,
+        "test": 14
+      },
+      "label_counts": {
+        "actual": 92,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_BB.png_036f4bca-a256-449d-ad37-97d36e685d58.png",
+        "dataset/test/actual/actual_original_BB.png_12b63b19-6277-4a12-ab5b-b58052375a6b.png",
+        "dataset/test/actual/actual_original_BB.png_1cf051d1-e968-4fa0-b04b-d06fe3e5f689.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ao.png",
+      "split_counts": {
+        "train": 62,
+        "val": 18,
+        "test": 11
+      },
+      "label_counts": {
+        "actual": 91,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AO.png_031ed285-4db7-4fbb-9701-018e5848e8cb.png",
+        "dataset/test/actual/actual_original_AO.png_23c10da3-f89e-4f44-8d96-aa187052ab85.png",
+        "dataset/test/actual/actual_original_AO.png_583ebdfc-127b-4e7a-a25e-0c1f162fba1e.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ag.png",
+      "split_counts": {
+        "train": 67,
+        "val": 15,
+        "test": 7
+      },
+      "label_counts": {
+        "actual": 89,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AG.png_02f1dcfa-9d5e-4cbc-bba1-227db44b0c83.png",
+        "dataset/test/actual/actual_original_AG.png_078e2d1f-e4c4-4c08-b048-8456eb30dc89.png",
+        "dataset/test/actual/actual_original_AG.png_156c59de-43fb-4241-9f0f-0760329390b9.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ai.png",
+      "split_counts": {
+        "train": 47,
+        "val": 26,
+        "test": 16
+      },
+      "label_counts": {
+        "actual": 89,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AI.png_06a55efb-477f-485c-ad26-6e8a80e2c9e7.png",
+        "dataset/test/actual/actual_original_AI.png_0ece8202-2637-4c5c-85a6-fb0b7acf5861.png",
+        "dataset/test/actual/actual_original_AI.png_227c53ca-f41d-4a14-8516-8fa25fc5d167.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_be.png",
+      "split_counts": {
+        "train": 60,
+        "val": 13,
+        "test": 16
+      },
+      "label_counts": {
+        "actual": 89,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_BE.png_03ae50ea-f2c1-47e7-ab7f-05518893cc0d.png",
+        "dataset/test/actual/actual_original_BE.png_4b5d7c8d-b71c-4818-9e8c-e8e91f43a340.png",
+        "dataset/test/actual/actual_original_BE.png_5335a0eb-6a05-4f6e-b404-16330668ee67.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_am.png",
+      "split_counts": {
+        "train": 55,
+        "val": 25,
+        "test": 8
+      },
+      "label_counts": {
+        "actual": 88,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AM.png_0fd62d55-00e2-4ef2-b661-59459ec56138.png",
+        "dataset/test/actual/actual_original_AM.png_1490e151-9e1d-4000-ac26-6df4db7176b8.png",
+        "dataset/test/actual/actual_original_AM.png_414435ea-b19a-4277-a7ba-b57eb52ec361.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_aa.png",
+      "split_counts": {
+        "train": 57,
+        "val": 20,
+        "test": 10
+      },
+      "label_counts": {
+        "actual": 87,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AA.png_0e12131c-742b-4db2-b497-e6a4e75989ad.png",
+        "dataset/test/actual/actual_original_AA.png_1e0a9a22-d84b-4cf8-b563-2d78b2c18ee9.png",
+        "dataset/test/actual/actual_original_AA.png_3227c657-e870-4f10-8f2d-d1aee9f5cda2.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ae.png",
+      "split_counts": {
+        "train": 54,
+        "val": 23,
+        "test": 10
+      },
+      "label_counts": {
+        "actual": 87,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AE.png_07bab7a0-ab4a-4d3e-8abd-08181a86f241.png",
+        "dataset/test/actual/actual_original_AE.png_0e10894a-2472-4ecb-adb3-5e057d72afed.png",
+        "dataset/test/actual/actual_original_AE.png_1c0e7fe8-2550-4d94-aad1-f17855a1db0f.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_aw.png",
+      "split_counts": {
+        "train": 53,
+        "val": 21,
+        "test": 12
+      },
+      "label_counts": {
+        "actual": 86,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AW.png_0296ab5b-8ed5-4467-b29a-73657036b773.png",
+        "dataset/test/actual/actual_original_AW.png_04246861-5ffb-4b6f-af54-4ff32d4eeedd.png",
+        "dataset/test/actual/actual_original_AW.png_06f6a02e-3bf3-434e-9f0d-67b1fad8083b.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_bd.png",
+      "split_counts": {
+        "train": 58,
+        "val": 23,
+        "test": 5
+      },
+      "label_counts": {
+        "actual": 86,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_BD.png_226147c5-c4cf-46e5-a12d-6fc1a57fe9b1.png",
+        "dataset/test/actual/actual_original_BD.png_469bd0ce-04b8-42a3-9523-cdb322c5f163.png",
+        "dataset/test/actual/actual_original_BD.png_4aebe2e9-d68b-4420-a6d9-8d3c195399a6.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_at.png",
+      "split_counts": {
+        "train": 61,
+        "val": 17,
+        "test": 7
+      },
+      "label_counts": {
+        "actual": 85,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AT.png_04cfa44a-5eae-41b2-bb8f-adaa832110f8.png",
+        "dataset/test/actual/actual_original_AT.png_180e3b0a-85fe-40f4-a781-23fa5fb0acb1.png",
+        "dataset/test/actual/actual_original_AT.png_3ce99b8c-8042-49e7-b561-7cbd213064aa.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_al.png",
+      "split_counts": {
+        "train": 52,
+        "val": 27,
+        "test": 5
+      },
+      "label_counts": {
+        "actual": 84,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AL.png_09dda80c-d714-4578-a5d4-f8b08ac3fb75.png",
+        "dataset/test/actual/actual_original_AL.png_5f3f6461-5504-4fdd-8e8f-83dfa5c40a18.png",
+        "dataset/test/actual/actual_original_AL.png_8c230ec6-9440-4a39-97d7-23956b5e4ed4.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_as.png",
+      "split_counts": {
+        "train": 59,
+        "val": 16,
+        "test": 9
+      },
+      "label_counts": {
+        "actual": 84,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AS.png_0216d3a7-a001-40b8-a723-79aa73f687f6.png",
+        "dataset/test/actual/actual_original_AS.png_1770e313-1a6e-4e8c-ac9a-7fb11d22e5e2.png",
+        "dataset/test/actual/actual_original_AS.png_182800c5-698f-4d3b-bcf0-df6954fb17cc.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_au.png",
+      "split_counts": {
+        "train": 44,
+        "val": 24,
+        "test": 16
+      },
+      "label_counts": {
+        "actual": 84,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AU.png_0123bffa-bdc1-4c7a-9aa2-8e6646979603.png",
+        "dataset/test/actual/actual_original_AU.png_09527576-bd6f-4eeb-a253-33b1b42c1ae3.png",
+        "dataset/test/actual/actual_original_AU.png_25c621b4-2a98-49f1-9951-38b9a8121ebe.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ac.png",
+      "split_counts": {
+        "train": 46,
+        "val": 22,
+        "test": 14
+      },
+      "label_counts": {
+        "actual": 82,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AC.png_0dc26064-402f-4e9c-9b15-4901b98004aa.png",
+        "dataset/test/actual/actual_original_AC.png_114aed5e-3603-45b4-b432-a9c24a0b5404.png",
+        "dataset/test/actual/actual_original_AC.png_140578dd-1100-485c-976b-07de035ac0ac.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_bc.png",
+      "split_counts": {
+        "train": 51,
+        "val": 15,
+        "test": 15
+      },
+      "label_counts": {
+        "actual": 81,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_BC.png_11bc7fc2-d0f7-44b1-acbd-d0ff40ea7cb5.png",
+        "dataset/test/actual/actual_original_BC.png_348b3582-5639-431f-bc0f-c1ce1cc9bfca.png",
+        "dataset/test/actual/actual_original_BC.png_4f2a8bca-442b-4531-be16-630541e77748.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_aq.png",
+      "split_counts": {
+        "train": 45,
+        "val": 27,
+        "test": 8
+      },
+      "label_counts": {
+        "actual": 80,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AQ.png_1d14b40e-7ada-4a10-a3e9-27e5814fd453.png",
+        "dataset/test/actual/actual_original_AQ.png_44811b56-3b7a-4e5e-bdb5-439de6547341.png",
+        "dataset/test/actual/actual_original_AQ.png_81f42707-d594-4466-aa06-b3db385d6a78.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ar.png",
+      "split_counts": {
+        "train": 49,
+        "val": 22,
+        "test": 9
+      },
+      "label_counts": {
+        "actual": 80,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AR.png_064dbf1e-aefa-454e-b271-72db58749e9a.png",
+        "dataset/test/actual/actual_original_AR.png_0b22faff-7046-4608-a584-716615c7646b.png",
+        "dataset/test/actual/actual_original_AR.png_37ecd690-7c18-47dc-b967-4b659070904f.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ak.png",
+      "split_counts": {
+        "train": 45,
+        "val": 25,
+        "test": 6
+      },
+      "label_counts": {
+        "actual": 76,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AK.png_2663219e-7f1e-41eb-8850-37f588907515.png",
+        "dataset/test/actual/actual_original_AK.png_27486c65-5392-479f-a55a-30d253c95e9a.png",
+        "dataset/test/actual/actual_original_AK.png_278e5940-acf1-4ff9-88d7-1e1a059e4b79.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_ap.png",
+      "split_counts": {
+        "train": 41,
+        "val": 23,
+        "test": 9
+      },
+      "label_counts": {
+        "actual": 73,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AP.png_264452bd-338e-4bb1-a1e3-237f2f62bc43.png",
+        "dataset/test/actual/actual_original_AP.png_93a13134-b38a-482c-9575-826630a87223.png",
+        "dataset/test/actual/actual_original_AP.png_b2cdbdce-d0cc-43b3-9ef2-b83d9afd543a.png"
+      ]
+    },
+    {
+      "candidate_source": "actual_original_az.png",
+      "split_counts": {
+        "train": 43,
+        "val": 12,
+        "test": 11
+      },
+      "label_counts": {
+        "actual": 66,
+        "faulty": 0
+      },
+      "examples": [
+        "dataset/test/actual/actual_original_AZ.png_03fb0081-7d56-4a62-8e2e-6b60a3c214f3.png",
+        "dataset/test/actual/actual_original_AZ.png_136fdc23-8669-49bb-a448-a8c3396f04fe.png",
+        "dataset/test/actual/actual_original_AZ.png_1dee8e16-23a3-44a3-9e51-67fc49c22f5d.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_bb4.png",
+      "split_counts": {
+        "train": 14,
+        "val": 12,
+        "test": 18
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 44
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_BB4.png_0bc92278-3420-4d50-96a8-3fa4525a4a16.png",
+        "dataset/test/faulty/faulty_original_BB4.png_102c89d2-5138-478b-b162-040ce53bbe8e.png",
+        "dataset/test/faulty/faulty_original_BB4.png_10962040-b1e1-4075-b3cc-1d6dd16e6e3e.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_aw3.png",
+      "split_counts": {
+        "train": 15,
+        "val": 14,
+        "test": 13
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 42
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AW3.png_0da51d11-d108-416c-bfc4-0a8628b4c325.png",
+        "dataset/test/faulty/faulty_original_AW3.png_319930ff-da94-459f-9d1e-0538e4d49443.png",
+        "dataset/test/faulty/faulty_original_AW3.png_32be4e10-608f-49d5-9fd6-dd8f073a4e57.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ak2.png",
+      "split_counts": {
+        "train": 10,
+        "val": 15,
+        "test": 16
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 41
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AK2.png_3b2ab934-814b-4a74-85f3-fdc1e115acb4.png",
+        "dataset/test/faulty/faulty_original_AK2.png_3e5b84da-0ea1-49e1-96c1-50c6987f786a.png",
+        "dataset/test/faulty/faulty_original_AK2.png_4995c309-447e-45bf-b3a6-e31f78fdd9fc.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ao2.png",
+      "split_counts": {
+        "train": 12,
+        "val": 11,
+        "test": 18
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 41
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AO2.png_08e27b76-23ae-4eff-9283-3b1a6b62ab27.png",
+        "dataset/test/faulty/faulty_original_AO2.png_095450b8-629e-4861-863a-ce998b3cbc2f.png",
+        "dataset/test/faulty/faulty_original_AO2.png_1edb54b6-f351-46ec-bbec-ae4c2653e482.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_af2.png",
+      "split_counts": {
+        "train": 10,
+        "val": 15,
+        "test": 15
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 40
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AF2.png_085492a4-6b2e-4ef1-9b9a-3ee0daeac7d4.png",
+        "dataset/test/faulty/faulty_original_AF2.png_0e6efdd4-8025-426e-a14a-f108e2cf359c.png",
+        "dataset/test/faulty/faulty_original_AF2.png_340b0087-0895-4d27-8d49-0605abd8d85f.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ay3.png",
+      "split_counts": {
+        "train": 11,
+        "val": 13,
+        "test": 16
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 40
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AY3.png_09890a58-446d-4365-b6b8-f2bb344d3dcf.png",
+        "dataset/test/faulty/faulty_original_AY3.png_1c91c5c6-e2ae-4c26-b426-09c5a4cba402.png",
+        "dataset/test/faulty/faulty_original_AY3.png_21f78313-db3e-4678-8873-908d4577f274.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ao3.png",
+      "split_counts": {
+        "train": 11,
+        "val": 10,
+        "test": 18
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 39
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AO3.png_2ac40cdd-48da-480b-93e5-1d831b6dc4da.png",
+        "dataset/test/faulty/faulty_original_AO3.png_3439d26b-eda5-406a-a25e-5fb0bf05d5ac.png",
+        "dataset/test/faulty/faulty_original_AO3.png_35709efa-4c2d-4fb8-8a86-53ad02d2b0fc.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ap2.png",
+      "split_counts": {
+        "train": 13,
+        "val": 12,
+        "test": 14
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 39
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AP2.png_0a3220eb-c687-4ece-b74c-a4e8d65c0923.png",
+        "dataset/test/faulty/faulty_original_AP2.png_0da0fda4-bf5b-4d8e-b599-cb1f4f1059ee.png",
+        "dataset/test/faulty/faulty_original_AP2.png_37996637-7922-46d4-a1b2-3f2e5e85a0cc.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ai4.png",
+      "split_counts": {
+        "train": 11,
+        "val": 15,
+        "test": 12
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 38
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AI4.png_14a4e575-59de-4e9e-900f-7241938bc79d.png",
+        "dataset/test/faulty/faulty_original_AI4.png_27076c54-78c7-4bdb-82f3-20d4cb8743aa.png",
+        "dataset/test/faulty/faulty_original_AI4.png_66500f9a-3685-44e1-8d61-405565b20fdb.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ap7.png",
+      "split_counts": {
+        "train": 14,
+        "val": 15,
+        "test": 9
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 38
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AP7.png_2d5508cd-43aa-446d-af2c-6fab2e473599.png",
+        "dataset/test/faulty/faulty_original_AP7.png_462a2fb5-fb74-4f40-a90c-efad7f94dc81.png",
+        "dataset/test/faulty/faulty_original_AP7.png_9e0c34b3-072f-4028-8583-3dfad0df4a8a.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_bb1.png",
+      "split_counts": {
+        "train": 15,
+        "val": 14,
+        "test": 9
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 38
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_BB1.png_1f8a787e-4858-4716-a706-c6b73602563f.png",
+        "dataset/test/faulty/faulty_original_BB1.png_4ba03c98-5f18-4533-a7c4-d96f92dc78b3.png",
+        "dataset/test/faulty/faulty_original_BB1.png_5222c96b-1492-4de8-b4cd-077b0ea0378c.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ac3.png",
+      "split_counts": {
+        "train": 11,
+        "val": 12,
+        "test": 14
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 37
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AC3.png_0648af0f-a03d-4eee-916d-d255d4678dc7.png",
+        "dataset/test/faulty/faulty_original_AC3.png_1048ad7c-c0e4-475a-8a17-94ceee80fb50.png",
+        "dataset/test/faulty/faulty_original_AC3.png_16d7be0a-0dd6-4b01-93e3-c5194383668a.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_aq3.png",
+      "split_counts": {
+        "train": 8,
+        "val": 11,
+        "test": 18
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 37
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AQ3.png_051d5c2f-4552-4c01-bf2d-34e2998fd542.png",
+        "dataset/test/faulty/faulty_original_AQ3.png_0dc6bcbf-0ec3-4d14-84f1-c316a3e79f9a.png",
+        "dataset/test/faulty/faulty_original_AQ3.png_2057744a-06e1-4a0d-b800-ee1f03a1e9d1.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_aq6.png",
+      "split_counts": {
+        "train": 12,
+        "val": 14,
+        "test": 11
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 37
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AQ6.png_139ee74c-fb28-4c4a-88fc-b0c6dc14d63a.png",
+        "dataset/test/faulty/faulty_original_AQ6.png_2b9e89f2-381d-43ba-8531-8e17951b1c94.png",
+        "dataset/test/faulty/faulty_original_AQ6.png_60c9520b-373e-4714-af13-bf6d9321e8d8.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_as3.png",
+      "split_counts": {
+        "train": 9,
+        "val": 16,
+        "test": 12
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 37
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AS3.png_0df7afa1-c549-4962-8056-6050c56e211e.png",
+        "dataset/test/faulty/faulty_original_AS3.png_1fb24d83-3f2d-4bfd-91c4-ddec899a0a99.png",
+        "dataset/test/faulty/faulty_original_AS3.png_4d13c073-ca76-4c23-b3fd-4a92cc8e2439.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_at5.png",
+      "split_counts": {
+        "train": 12,
+        "val": 15,
+        "test": 10
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 37
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AT5.png_073e9464-07ce-4b57-bf93-67ff696308b8.png",
+        "dataset/test/faulty/faulty_original_AT5.png_2aa6571b-9b80-41bb-bfed-2ea95ae41436.png",
+        "dataset/test/faulty/faulty_original_AT5.png_30828613-8d85-4b4c-8a86-ceacfe8320cf.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_bc3.png",
+      "split_counts": {
+        "train": 9,
+        "val": 18,
+        "test": 10
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 37
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_BC3.png_223cba01-4232-499d-b365-4094110f431b.png",
+        "dataset/test/faulty/faulty_original_BC3.png_33f7106a-8c25-4ced-83c0-a0d24017430f.png",
+        "dataset/test/faulty/faulty_original_BC3.png_42b543a1-7cad-4634-9622-a0ad2c61faab.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ac4.png",
+      "split_counts": {
+        "train": 14,
+        "val": 14,
+        "test": 8
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 36
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AC4.png_264cb83a-4cfc-4196-afd1-ccf4d2fbfae9.png",
+        "dataset/test/faulty/faulty_original_AC4.png_464b647c-6ae0-43f3-b24c-ad9b0cb10d17.png",
+        "dataset/test/faulty/faulty_original_AC4.png_715bbe6b-1b6a-42c1-b296-e8ae89046170.png"
+      ]
+    },
+    {
+      "candidate_source": "faulty_original_ai6.png",
+      "split_counts": {
+        "train": 12,
+        "val": 13,
+        "test": 11
+      },
+      "label_counts": {
+        "actual": 0,
+        "faulty": 36
+      },
+      "examples": [
+        "dataset/test/faulty/faulty_original_AI6.png_00d7a3b0-0866-4162-827b-625aaef8698e.png",
+        "dataset/test/faulty/faulty_original_AI6.png_2354dd47-9f65-4b84-a7d1-f7b36aebfb61.png",
+        "dataset/test/faulty/faulty_original_AI6.png_4a8ba942-7155-49d8-a598-1f3cff792439.png"
+      ]
+    }
+  ],
+  "unrecognized_split_label_paths": [],
+  "unique_candidate_groups_by_label": {
+    "actual": 31,
+    "faulty": 151
+  },
+  "GO_NO_GO": "NO-GO original split if cross-split candidate parent matches; manual original lineage still required for any source-level accuracy claims",
+  "interpretation": "Candidate parents inferred by stripping an appended UUID from each image filename. Same basename alone is not proof of identical photographed source."
+}
