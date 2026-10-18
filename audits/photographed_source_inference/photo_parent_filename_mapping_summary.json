@@ -1,0 +1,28 @@
+{
+  "inference_only": true,
+  "all_augmented_images": 7365,
+  "normal_family_count": 31,
+  "faulty_photoshop_candidate_count": 151,
+  "inferred_underlying_photo_count": 31,
+  "inferred_parent_match_rate": 1.0,
+  "filename_linking_rule": "faulty_original_XXN maps to actual_original_XX; N is Photoshop defect variant index",
+  "photo_parent_disjoint_splits": {
+    "train": 21,
+    "val": 5,
+    "test": 5
+  },
+  "image_split_counts": {
+    "train_actual": 1879,
+    "val_actual": 433,
+    "test_actual": 422,
+    "train_faulty": 3141,
+    "val_faulty": 826,
+    "test_faulty": 664
+  },
+  "unmatched_groups": [],
+  "unparsed_files": [],
+  "photo_source_provenance_review": "Manual source photos / Photoshop edit history STILL REQUIRED. Filename rule might be wrong.",
+  "top_visual_matches_in_earlier_report": "audits/photo_lineage_review/review_candidates_top5.json",
+  "weights_trained_on_this_grouping": false,
+  "external_test_accessed": false
+}
