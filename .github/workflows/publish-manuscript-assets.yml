@@ -1,0 +1,56 @@
+name: Publish thesis figures and IEEE PDF
+on:
+  push:
+    paths:
+      - .github/workflows/publish-manuscript-assets.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install asset downloader
+        run: python -m pip install --disable-pip-version-check gdown
+      - name: Download published thesis-figure archive from the project Drive
+        run: |
+          gdown --id 175IFo7qcrITfKOEPyN4zMD-EVeEG-UCK -O /tmp/thesis_extracted_figures.zip
+          echo "8347673fab549579dfc476cefc2e08957a93e2265b127b9e5f71f34b2cd63965  /tmp/thesis_extracted_figures.zip" | sha256sum -c -
+          python - <<'PY'
+          import zipfile
+          from pathlib import Path
+          target=Path('paper/figures')
+          target.mkdir(parents=True, exist_ok=True)
+          wanted={'page33_image1.jpeg','page33_image2.jpeg','page64_image1.png','page67_image1.png'}
+          with zipfile.ZipFile('/tmp/thesis_extracted_figures.zip') as z:
+              names={Path(n).name:n for n in z.namelist() if not n.endswith('/')}
+              assert wanted<=names.keys(), f"Missing: {wanted-names.keys()}"
+              for name in sorted(wanted):
+                  (target/name).write_bytes(z.read(names[name]))
+                  print(name,(target/name).stat().st_size)
+          PY
+      - name: Install LaTeX dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-publishers texlive-fonts-recommended poppler-utils
+      - name: Build paper with authentic thesis images
+        run: |
+          cd paper
+          pdflatex -halt-on-error -interaction=nonstopmode main.tex > /tmp/latex-pass1.log
+          pdflatex -halt-on-error -interaction=nonstopmode main.tex > /tmp/latex-pass2.log
+          mv main.pdf ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf
+          pdfinfo ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf | grep -E 'Pages:|Page size:|File size:'
+          test "$(pdfinfo ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf | awk '/Pages:/ {print $2}')" -le 6
+          test "$(stat -c%s ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf)" -lt 3000000
+          sha256sum ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf > PAPER_SHA256.txt
+      - name: Commit authentic images and compiled working paper
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add paper/figures/ paper/ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf paper/PAPER_SHA256.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish original thesis figures and compiled IEEE working PDF'
+            git push
+          fi
