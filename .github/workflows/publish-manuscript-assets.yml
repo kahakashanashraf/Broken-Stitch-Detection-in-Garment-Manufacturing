@@ -23,7 +23,7 @@ jobs:
           from pathlib import Path
           target=Path('paper/figures')
           target.mkdir(parents=True, exist_ok=True)
-          wanted={'page33_image1.jpeg','page33_image2.jpeg','page64_image1.png','page67_image1.png'}
+          wanted={'page31_image1.jpeg','page33_image1.jpeg','page33_image2.jpeg','page55_image1.png','page55_image2.jpeg','page57_image1.jpeg','page60_image1.jpeg','page64_image1.png','page64_image2.jpeg','page67_image1.png'}
           with zipfile.ZipFile('/tmp/thesis_extracted_figures.zip') as z:
               names={Path(n).name:n for n in z.namelist() if not n.endswith('/')}
               assert wanted<=names.keys(), f"Missing: {wanted-names.keys()}"
