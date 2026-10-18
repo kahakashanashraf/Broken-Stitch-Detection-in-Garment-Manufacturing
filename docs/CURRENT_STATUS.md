@@ -1,17 +1,17 @@
-# Current research status — 2026-10-18
+# Research status (18 October 2026)
 
-| Item | Status | Evidence |
-|---|---|---|
-| 2022 historical best VGG-16 validation accuracy | Reported **94.91%** | Unpublished thesis; not independently reproduced |
-| Rebuilt CNN/VGG-16 PyTorch code | Implemented approximation | `code/` (NOT exact 2022 source recovery) |
-| Automated code tests | **12 passed locally** (2026-10-18) | `python -m pytest -q` on available synthetic test cases |
-| Original 2.15 GB ZIP audit | **Not completed** | Connector download cap prevented access |
-| Verified parent/source image lineage | **Not completed** | Requires image provenance inventory and manual review |
-| Source-disjoint real-data training | **Not run** | Requires audited lineage and GPU |
-| StitchingNet binary external test | **Not run** | Official dataset licensing and image verification pending |
-| 2027 ICEEICT 6-page paper draft | Working draft / protocol | `paper/main.tex` |
-| Conference acceptance/submission approval | **Not established** | Requires results, author review, image rights, venue policy |
+| Item | Actual status |
+|---|---|
+| Original dataset 2,146,784,353-byte ZIP on public GitHub | **Uploaded** as GitHub Release `original-thesis-dataset-v1`; file size and archive integrity verified |
+| Historical thesis figures | **10 extracted figures uploaded**, `paper/figures/` |
+| IEEE manuscript PDF | **Uploaded**, 6-page anonymous **working draft**, with original figures, NOT submission-cleared |
+| Historical original training code and weights | **Not available** |
+| Rebuilt code | PyTorch approximation in `code/` |
+| Software tests | **12/12 passed** in synthetic tests; GitHub CI confirmed |
+| Original dataset provenance + parent image lineage | **Not audited** |
+| Internal independent source-disjoint test | **Not run** |
+| External StitchingNet test | **Not run** |
+| New scientifically verified Accuracy/F1/ROC-AUC | **No new results** |
+| 2022 VGG-16 reported 94.91% | Historical **validation** only; independent replication pending |
 
-**Reproducibility rule:** Do not use the code's synthetic smoke-test outputs or the historical validation number as fresh scientific evidence. The 2022 reported 20,000/10,000/9,134 counts must be reconciled rather than silently replaced.
-
-**Caution for double-blind review:** this public repository and its owner identity may make the authors discoverable. Confirm conference anonymization rules before citing this repository in the review manuscript.
+**Explicit constraints:** The images may contain derived or third-party material and publishing rights have not been independently cleared. Public availability is not a redistribution license. The ICEEICT paper must not claim novel measured results or anonymity compliance without author/venue review.

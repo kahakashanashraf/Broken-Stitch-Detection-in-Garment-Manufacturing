@@ -1,7 +1,12 @@
-# Data availability, provenance and licenses
+# Raw data, figures and licensing status
 
-The original reported image collection is not embedded in GitHub. A 2.15 GB `dataset.zip` is stored in the research team’s authorized Google Drive. It may include third-party images and Photoshop-generated versions; image provenance/redistribution permissions have not been certified. **Do not upload the raw ZIP here or release example images without rights review.**
+- **Original thesis dataset** is now distributed as `dataset.zip` (2,146,784,353 bytes) through [GitHub Release `original-thesis-dataset-v1`](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/original-thesis-dataset-v1). Metadata with SHA-256 and ZIP-integrity validation is included alongside the release asset.
+- **Historical thesis figures**: 10 extracted image files are available in [`paper/figures/`](../paper/figures/). Images were extracted from the team's thesis material and were posted at the repository owner's express request.
+- **No actual historical or newly trained weights** have been recovered. See [`models/README.md`](../models/README.md).
+- **Provenance and legal status remain unverified.** The thesis describes Photoshop-generated defects and image sourcing that may include third-party content. Publication of these archives is not a declaration of sole ownership, consent from every depicted/source author, public-domain status or a blanket redistribution license. Request permission before third-party reuse.
+- External public [StitchingNet](https://github.com/hyungjungkim/StitchingNet) carries its publishers' CC BY-NC 4.0 license. It has **not** been copied into this repository or used for new test metrics.
+- Rebuilt PyTorch code is not the historical TensorFlow/Keras source. No general open-source licensing grant has been confirmed for this repository.
 
-External data: [StitchingNet](https://github.com/hyungjungkim/StitchingNet), licensed CC BY-NC 4.0 by its distributors. Published normal / broken counts are 2,436 / 1,201, but the image files and folder labels have not yet been verified for this project. Do not confuse normal-versus-broken with all eleven classes.
+## Scientific use warning
 
-Code is a modern reconstruction, not original recovered thesis source. No open-source redistribution license for this repository has yet been approved by the authors; GitHub visibility does **not** automatically mean all rights are licensed for reuse.
+ZIP CRC/size validation alone does not prove original-image identity, non-overlapping training/test splits, dataset label validity, lack of near-duplicate leakage or generalizability. Follow [research protocol](RESEARCH_PROTOCOL.md) before reporting accuracy.

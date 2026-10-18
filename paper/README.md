@@ -1,19 +1,19 @@
-# ICEEICT 2027 working paper (NOT submission cleared)
+# ICEEICT 2027 — anonymous IEEE working manuscript
 
-`main.tex` is an **anonymous IEEEtran working manuscript** that distinguishes 2022 thesis results from unperformed experiments. It must not be cited as new source-disjoint or external benchmark evidence.
+Files in this directory:
 
-To compile on a system with `IEEEtran`, `booktabs`, `amsmath`, `graphicx`, `hyperref` and other standard TeX packages:
+- [`main.tex`](main.tex): editable IEEE manuscript describing *historical* thesis results and a **proposed, unexecuted** source-disjoint and StitchingNet validation protocol.
+- [`ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf`](ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf): 6-page PDF compiled in GitHub Actions with original thesis images.
+- [`figures/`](figures/): ten historical figures extracted from the unpublished thesis; four are currently referenced by the TeX.
+- [`PAPER_SHA256.txt`](PAPER_SHA256.txt): SHA-256 of the compiled PDF.
+- [`restore_figures.py`](restore_figures.py): option to restore a local figures ZIP if needed.
+
+Compile with IEEEtran and TeX packages (graphicx, booktabs, cite, amsmath, hyperref, etc.):
 
 ```bash
-# From repository root:
-python paper/restore_figures.py
 cd paper
-pdflatex -interaction=nonstopmode -halt-on-error main.tex
-pdflatex -interaction=nonstopmode -halt-on-error main.tex
+pdflatex -halt-on-error -interaction=nonstopmode main.tex
+pdflatex -halt-on-error -interaction=nonstopmode main.tex
 ```
 
-`restore_figures.py` extracts the original thesis figures from `figures_original_thesis.zip` into `paper/figures/` if the archive exists. These are **historical thesis figures**, not newly generated benchmarks. Only figures appearing in the actual manuscript are used. The ZIP provenance is the original thesis document; confirm image rights before sharing publicly.
-
-Publishing a manuscript in a publicly attributable repository could weaken the anonymity of a double-blind submission. Do not put author identities inside the submitted PDF, its metadata, or identifying self-citations. Independently verify conference rules and obtain author approval.
-
-The training code and raw dataset are not included in the PDF; dataset access is discussed in `docs/CURRENT_STATUS.md`.
+**Not a submission-ready new-results paper.** No new real-data training, source-disjoint performance or cross-dataset evaluation has been run. Figures and thesis dataset are public at the owner's request but provenance/licensing have NOT been independently cleared. GitHub repository visibility does not grant a reuse license. Anonymity of a public author-associated repository must be considered under the venue's double-blind review rules.
