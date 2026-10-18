@@ -19,3 +19,9 @@ Artifacts published together:
 The original 2022 TensorFlow/Keras `.h5`/`.keras` model and original 2022 training code have **not** been found. The new PyTorch checkpoint is NOT those historical weights.
 
 If/when a fully audited model is produced, release an entirely separate checkpoint with trained architecture, seeds, training code SHA, photo-source-disjoint split, class map, training provenance, validation selection and independent metrics.
+
+## Pretrained MobileNetV3-Small baseline (18 October 2026)
+
+[Download frozen ImageNet-pretrained MobileNet features + trained balanced logistic head](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/mobilenet-v3-small-frozen-feature-v1). This checkpoint includes the pretrained feature network and fitted classifier; it is NOT the historical VGG-16 2022 model. The 5,167 train/1,120 validation images used the *older* candidate-family grouping.
+
+[First frozen external StitchingNet test](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/stitchingnet-frozen-first-eval-v1): MobileNet macro-F1 **0.6354**, normal recall **70.73%**, broken-stitch recall **57.79%** across 3,637 external normal/broken images. No external label tuning; this has now consumed StitchingNet as a *first untouched* benchmark and must not be repeated as independent after tuning. Still unverified photographed-photo lineage and NOT deployable.

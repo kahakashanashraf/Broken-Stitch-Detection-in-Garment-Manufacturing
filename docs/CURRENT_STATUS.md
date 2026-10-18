@@ -43,3 +43,11 @@ The team asked to fit a new model; this is a real fitting run, **not** the 2022 
 5. **Paper:** Historic 94.91% remains thesis **validation**; do not claim the rebuilt checkpoint reproduces it.
 
 The released archive's original 2022 reported 181 image sources and the observed 182 filename groups need reconciliation, not invented explanation. Publication rights and conference AI/anonymity policies remain separate unresolved gates.
+
+## 18 October update — pretrained models and FIRST external evaluation
+
+The previous scratch-CNN checkpoint remains available. Newly [pretrained MobileNetV3-Small frozen-feature checkpoint](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/mobilenet-v3-small-frozen-feature-v1) has been trained on the older 182-family train/val grouping (MobileNet validation macro-F1 0.6483). [One-shot external report](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/stitchingnet-frozen-first-eval-v1): 3,637 StitchingNet images; MobileNet macro-F1 0.6354, normal recall 70.73%, broken recall 57.79%; old SmallCNN macro-F1 0.3146. All models and 0.5 threshold were frozen BEFORE viewing StitchingNet labels for evaluation.
+
+[Photoshop parent inference](../audits/photographed_source_inference/) maps 151 faulty candidate families to 31 normal candidate photo names (filename match rate 100%); human visual/source-document verification still outstanding. **The MobileNet was NOT trained on the newly inferred 31-photo-parent split.** Full results/limitations: [research report](RESULTS_AND_LINEAGE_2026_10_18.md).
+
+The StitchingNet benchmark has now been examined. Do **not** reuse it for post-hoc model tuning and claim any subsequent assessment is untouched. Still **NO-GO** for submission-ready independent-source performance, device use or a verified photo-parent classification benchmark.

@@ -62,3 +62,20 @@ This is a publicly attributable repository and may compromise strict double-blin
 A [new provisional group-exclusive SmallCNN run](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/exploratory-cnn-candidate-family-v1) was completed from scratch on the actual ZIP (7,364 readable images). Training succeeded and authentic `best.pt` exists, but the **exploratory test** had accuracy 57.38%, macro-F1 36.46%, and normal recall **0%** (all 369 normal test examples misidentified). It is **not** a functional stitch-detector and does **not** reproduce the thesis's historical 94.91% validation accuracy.
 
 See [full current status](docs/CURRENT_STATUS.md) and [model documentation](models/README.md). True photographed-source linkage and independent StitchingNet evaluation remain unsolved.
+
+## 18 October 2026 — New pretrained baseline and FIRST frozen external comparison
+
+The original-data audit now suggests **151 Photoshop-faulty candidate families link to 31 normal-source families** via filename convention; this gives **31 inferred photographed-source parent IDs**, not human-verified originals. See [photo-parent audit](audits/photographed_source_inference/).
+
+A **frozen ImageNet MobileNetV3-Small feature extractor + trained balanced logistic head** achieved validation macro-F1 **0.6483** on the *older 182-family candidate split*. [Model weights & report](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/mobilenet-v3-small-frozen-feature-v1).
+
+We then performed the **first and only untouched StitchingNet binary external evaluation**, with all 2,436 normal and 1,201 broken images, frozen threshold 0.5, no external tuning:
+
+| Frozen model | External macro-F1 | Accuracy | Broken recall | Normal recall |
+|---|---:|---:|---:|---:|
+| Rebuilt scratch SmallCNN | 0.315 | 35.61% | 91.17% | 8.21% |
+| ImageNet-pretrained frozen MobileNetV3-Small | **0.635** | **66.46%** | **57.79%** | **70.73%** |
+
+[External result JSON](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/stitchingnet-frozen-first-eval-v1) · [Complete methods, parentage mapping and limitations](docs/RESULTS_AND_LINEAGE_2026_10_18.md).
+
+**NO-GO for deployment or scientific claims of photo-source-independent accuracy.** MobileNet misses 507/1,201 real broken-stitch images. Also, further tuning evaluated against the now-inspected external StitchingNet benchmark is *not* a new untouched benchmark. The new 31-parent proposed split has **not** been used to fit this checkpoint.
