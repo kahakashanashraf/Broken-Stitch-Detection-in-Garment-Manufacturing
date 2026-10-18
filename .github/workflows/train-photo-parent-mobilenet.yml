@@ -1,0 +1,48 @@
+name: Train ImageNet MobileNet on 31 inferred photo parents, internal only
+on:
+  push:
+    paths:
+      - '.github/workflows/train-photo-parent-mobilenet.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  training:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install baseline dependencies
+        run: |
+          pip install torch torchvision scikit-learn Pillow numpy pandas opencv-python-headless
+          pip install -e code/ --no-deps
+      - name: Download audited source archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/photo
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/photo
+          test "$(stat -c%s /tmp/photo/dataset.zip)" -eq 2146784353
+      - name: Fit MobileNet backbone from ImageNet with PHOTO-parent inferred training/validation only
+        run: |
+          python code/scripts/train_photo_parent_mobilenet.py \
+            --zip /tmp/photo/dataset.zip \
+            --manifest audits/photographed_source_inference/inferred_photo_parent_split.csv \
+            --out /tmp/photo/model
+      - name: Publish genuine weights and full provenance (NOT external test)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG='mobilenet-photo-parent-inferred-v1'
+          if ! gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+              --title 'Pretrained MobileNet fit on 31 INFERRED photo-parent groups (not verified real photos)' \
+              --notes '21 candidate photo sources train / 5 validation / 5 untouched internal test. Frozen ImageNet pretrained backbone, trained balanced logistic head. Not independently verified photo provenance, NO external StitchingNet re-evaluation or tuning.' --prerelease --latest=false
+          fi
+          gh release upload "$TAG" /tmp/photo/model/mobilenet_v3_small_photo_parent_inferred.pt /tmp/photo/model/photo_parent_mobilenet_report.json --repo '${{ github.repository }}' --clobber
