@@ -1,0 +1,154 @@
+{
+  "archive": "dataset.zip",
+  "archive_size_bytes": 2146784353,
+  "zip_integrity": "PASS",
+  "archive_total_members": 7375,
+  "archive_files": 7365,
+  "images": 7365,
+  "other_files": 0,
+  "root_prefix_counts": [
+    [
+      "dataset",
+      7365
+    ]
+  ],
+  "image_folder_counts": [
+    [
+      "dataset/train/actual",
+      1723
+    ],
+    [
+      "dataset/val/faulty",
+      1606
+    ],
+    [
+      "dataset/test/faulty",
+      1547
+    ],
+    [
+      "dataset/train/faulty",
+      1478
+    ],
+    [
+      "dataset/val/actual",
+      674
+    ],
+    [
+      "dataset/test/actual",
+      337
+    ]
+  ],
+  "image_class_from_folder_counts": {
+    "normal": 2734,
+    "faulty": 4631
+  },
+  "extension_counts": [
+    [
+      ".png",
+      7365
+    ]
+  ],
+  "image_dimensions": [
+    [
+      "400x400",
+      7364
+    ]
+  ],
+  "image_bytes_by_folder_guessed_label": {
+    "normal": 786994794,
+    "faulty": 1358433296
+  },
+  "decode_status": {
+    "decoded_ok": 7364,
+    "decode_error": 1
+  },
+  "exact_duplicate_image_hash_groups": 0,
+  "exact_duplicate_image_instances": 0,
+  "exact_duplicate_image_examples": [],
+  "same_low_res_thumbnail_hash_groups": 0,
+  "same_low_res_thumbnail_hash_examples": [],
+  "first_image_filenames": [
+    "dataset/test/actual/actual_original_AA.png_0e12131c-742b-4db2-b497-e6a4e75989ad.png",
+    "dataset/test/actual/actual_original_AA.png_1e0a9a22-d84b-4cf8-b563-2d78b2c18ee9.png",
+    "dataset/test/actual/actual_original_AA.png_3227c657-e870-4f10-8f2d-d1aee9f5cda2.png",
+    "dataset/test/actual/actual_original_AA.png_448d30bb-cd20-418f-998b-3a21dddf4f19.png",
+    "dataset/test/actual/actual_original_AA.png_4bcc667d-3cd1-4122-976a-19638c315c6c.png",
+    "dataset/test/actual/actual_original_AA.png_801c10df-9912-44a7-bf6b-41da29f80b97.png",
+    "dataset/test/actual/actual_original_AA.png_a8c59ab3-1ed4-40ba-9115-af13ff5d0935.png",
+    "dataset/test/actual/actual_original_AA.png_e0d7bd5d-90bc-4837-96e2-b0ace99d8d2a.png",
+    "dataset/test/actual/actual_original_AA.png_ee8461f8-b44b-4482-a4bc-a1a7b0557dbd.png",
+    "dataset/test/actual/actual_original_AA.png_fd8251ed-e62e-4599-a111-7be6c6b944cd.png",
+    "dataset/test/actual/actual_original_AB.png_0992482b-2633-4ce2-85ff-20626d9c2489.png",
+    "dataset/test/actual/actual_original_AB.png_1a3657b3-985e-47b6-adfb-e5324baf56f0.png",
+    "dataset/test/actual/actual_original_AB.png_24f5a1cd-826f-4ad3-8017-9b79521b46b4.png",
+    "dataset/test/actual/actual_original_AB.png_27a3021e-85f1-454e-bfa2-58f3c5059a88.png",
+    "dataset/test/actual/actual_original_AB.png_297ca971-19e3-4903-abf6-20e1b96ce18b.png",
+    "dataset/test/actual/actual_original_AB.png_8db3fae5-7f1e-4450-b16c-5e2fcfe10494.png",
+    "dataset/test/actual/actual_original_AB.png_aa31ac14-c49b-4577-9038-871706ca60f6.png",
+    "dataset/test/actual/actual_original_AB.png_b305df7c-9bdc-44cb-bd6b-6be11f27c1a2.png",
+    "dataset/test/actual/actual_original_AB.png_d41259bd-f066-4e78-bdd1-cb653afe6ac9.png",
+    "dataset/test/actual/actual_original_AB.png_ef1c4a13-53ea-4cfc-8fe4-dafdc2420e6c.png",
+    "dataset/test/actual/actual_original_AB.png_fb9b029a-ee76-40b2-8be3-ca56c0ef78ca.png",
+    "dataset/test/actual/actual_original_AC.png_0dc26064-402f-4e9c-9b15-4901b98004aa.png",
+    "dataset/test/actual/actual_original_AC.png_114aed5e-3603-45b4-b432-a9c24a0b5404.png",
+    "dataset/test/actual/actual_original_AC.png_140578dd-1100-485c-976b-07de035ac0ac.png",
+    "dataset/test/actual/actual_original_AC.png_284b5acf-60bb-450f-b86d-c79b9653a10b.png",
+    "dataset/test/actual/actual_original_AC.png_3853ac4e-3cb2-48e1-a980-689b042eaa88.png",
+    "dataset/test/actual/actual_original_AC.png_39e8269f-1747-4ec5-b408-8310defdd105.png",
+    "dataset/test/actual/actual_original_AC.png_4dbf9bf5-c968-4178-bae3-49a252fede72.png",
+    "dataset/test/actual/actual_original_AC.png_5e9a8ba1-daf2-4194-85ae-edea3b3f04b9.png",
+    "dataset/test/actual/actual_original_AC.png_7938c90b-0921-4db3-ae36-a79a14fa945d.png",
+    "dataset/test/actual/actual_original_AC.png_79ae6da8-2541-4617-b026-4a99ed93b6a7.png",
+    "dataset/test/actual/actual_original_AC.png_8ea408da-4797-4b70-8538-362ad259cf47.png",
+    "dataset/test/actual/actual_original_AC.png_9411d64d-fe5e-423b-8a3e-e51f6f350455.png",
+    "dataset/test/actual/actual_original_AC.png_b63dad20-caf9-46c0-a353-b5b47c905202.png",
+    "dataset/test/actual/actual_original_AC.png_e30ed58b-ac51-4034-a247-c7872eb5dfd7.png",
+    "dataset/test/actual/actual_original_AD.png_02c39c1d-0834-46e4-bdb0-3a3985834150.png",
+    "dataset/test/actual/actual_original_AD.png_44ed670e-3b31-4443-9374-edcb4f584c81.png",
+    "dataset/test/actual/actual_original_AD.png_4b6efbd3-d020-43c2-a162-8ad290eb185c.png",
+    "dataset/test/actual/actual_original_AD.png_68b3c393-885f-4d8b-a6c4-92e0063b1843.png",
+    "dataset/test/actual/actual_original_AD.png_7daff1cd-ab1b-4f68-8f65-0cdf2cf2e338.png",
+    "dataset/test/actual/actual_original_AD.png_835479f3-df3a-4e4a-a00f-bcdd935c5121.png",
+    "dataset/test/actual/actual_original_AD.png_8a7edb1c-eacf-4c25-88a8-f8cb5a99d845.png",
+    "dataset/test/actual/actual_original_AD.png_91a9bfa4-2d70-4d6a-95d1-e8dd833e6a0f.png",
+    "dataset/test/actual/actual_original_AD.png_addf6bc2-4d56-4e5a-b391-613bbfe2b8ca.png",
+    "dataset/test/actual/actual_original_AD.png_b061967e-cb44-4f37-9dd8-544de61c3d6f.png",
+    "dataset/test/actual/actual_original_AD.png_b8ffdb3c-d3fa-459c-9b08-0fe200185778.png",
+    "dataset/test/actual/actual_original_AD.png_bbb44bbd-65e8-48ba-8d22-15129909e62a.png",
+    "dataset/test/actual/actual_original_AD.png_cc615d70-46ec-43d5-9a62-022a09b7f37f.png",
+    "dataset/test/actual/actual_original_AD.png_d77576fe-b9da-4cb7-939f-92a9e7736517.png",
+    "dataset/test/actual/actual_original_AD.png_d7a69393-0e00-4aca-85d9-d123918002c0.png",
+    "dataset/test/actual/actual_original_AD.png_f417d684-9be3-4fc4-97a5-39c600382fe5.png",
+    "dataset/test/actual/actual_original_AE.png_07bab7a0-ab4a-4d3e-8abd-08181a86f241.png",
+    "dataset/test/actual/actual_original_AE.png_0e10894a-2472-4ecb-adb3-5e057d72afed.png",
+    "dataset/test/actual/actual_original_AE.png_1c0e7fe8-2550-4d94-aad1-f17855a1db0f.png",
+    "dataset/test/actual/actual_original_AE.png_258c8349-d8c4-4103-a6c3-e3cc66455012.png",
+    "dataset/test/actual/actual_original_AE.png_400a43d5-aed4-400c-979c-54f847523a55.png",
+    "dataset/test/actual/actual_original_AE.png_76567194-1862-4642-8a22-c8ae9c7ee830.png",
+    "dataset/test/actual/actual_original_AE.png_9a7cf5c8-8ce1-4dcf-b37c-8bb811216439.png",
+    "dataset/test/actual/actual_original_AE.png_a7909fad-310a-4736-abda-c7739ec74505.png",
+    "dataset/test/actual/actual_original_AE.png_b8329216-205b-4beb-918b-497feb885620.png",
+    "dataset/test/actual/actual_original_AE.png_d8d6a1f7-1764-4740-9ead-14dfa8215e2e.png",
+    "dataset/test/actual/actual_original_AF.png_1279bac5-b2d0-4c11-82da-86a2c1b698be.png",
+    "dataset/test/actual/actual_original_AF.png_1eb5b6d6-d5b1-4f2b-b7d9-183ad5d16d26.png",
+    "dataset/test/actual/actual_original_AF.png_239bd4de-6946-4a1c-b64d-6a212819819a.png",
+    "dataset/test/actual/actual_original_AF.png_3e5aab22-3722-4634-aa69-9d83ca7f6ac1.png",
+    "dataset/test/actual/actual_original_AF.png_8fd2ecd5-98e7-4ab3-b9e7-b061c9a3f27c.png",
+    "dataset/test/actual/actual_original_AF.png_ab18cf8a-8921-4d65-ba2f-95d6347f9cf4.png",
+    "dataset/test/actual/actual_original_AF.png_c7beeb77-c70f-4b86-8a2e-69f5c2c674d2.png",
+    "dataset/test/actual/actual_original_AF.png_d3921c0d-f06b-4e22-a393-d3f45e2b513b.png",
+    "dataset/test/actual/actual_original_AF.png_e0c4c946-8537-48e2-a06f-23b8c337ef46.png",
+    "dataset/test/actual/actual_original_AF.png_e7f63b25-f77b-42e4-8d19-4ec95476e6a1.png",
+    "dataset/test/actual/actual_original_AF.png_f0d932c2-cf50-4c76-8bf3-0c998aabfd4c.png",
+    "dataset/test/actual/actual_original_AF.png_f6e7b36e-b77b-435d-b499-d0d385b7df8b.png",
+    "dataset/test/actual/actual_original_AG.png_02f1dcfa-9d5e-4cbc-bba1-227db44b0c83.png",
+    "dataset/test/actual/actual_original_AG.png_078e2d1f-e4c4-4c08-b048-8456eb30dc89.png",
+    "dataset/test/actual/actual_original_AG.png_156c59de-43fb-4241-9f0f-0760329390b9.png",
+    "dataset/test/actual/actual_original_AG.png_48028ce7-2acf-4031-a657-f1ece052f317.png",
+    "dataset/test/actual/actual_original_AG.png_913c5bba-e330-4da9-a0af-8e4219acc927.png",
+    "dataset/test/actual/actual_original_AG.png_b945ff33-a8f5-496f-b69a-a8d860c0d0fb.png",
+    "dataset/test/actual/actual_original_AG.png_fca571a6-7fc9-4ebc-949e-556e726c2017.png"
+  ],
+  "warning": "Filename/label/synthetic lineage are NOT verified; do NOT infer independent source_id from image filenames without provenance audit.",
+  "training_gate": "BLOCKED until original-image to augmentation/Photoshop parentage proven"
+}
