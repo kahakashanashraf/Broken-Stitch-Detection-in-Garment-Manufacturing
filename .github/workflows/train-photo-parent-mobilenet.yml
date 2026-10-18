@@ -1,8 +1,5 @@
 name: Train ImageNet MobileNet on 31 inferred photo parents, internal only
 on:
-  push:
-    paths:
-      - '.github/workflows/train-photo-parent-mobilenet.yml'
   workflow_dispatch:
 permissions:
   contents: write

@@ -48,3 +48,25 @@ SmallCNN confusion matrix: `[[200,2236],[106,1095]]`. It has extremely low norma
 5. Update the IEEE paper's claims and author declarations only after verification; historical 94.91% is an unreplicated 2022 validation metric, not comparable to the above frozen external test.
 
 These details preserve dataset source status, model lineage, training/validation distinction, and reproducibility for subsequent independent review.
+
+## Follow-up: a better-parent-grouped pretrained baseline fitted, internal validation ONLY
+
+After the original one-shot StitchingNet result was completed, a separate baseline was trained using the **31 normal-photo candidate families** linked to all 151 Photoshop faulty-name families. This follow-up model does NOT use the original old 182-family partition, and **was never evaluated on StitchingNet** (which must no longer be called untouched for subsequent runs).
+
+New split by inferred photograph parent IDs: **21 train / 5 validation / 5 preserved internal test**, with group exclusivity across *both class labels*. Exactly one corrupted normal PNG was excluded. Training **5,019 images** (1,878 normal / 3,141 faulty); validation **1,259** (433/826); internal holdout **1,086** (422/664, not touched by this model).
+
+Model: frozen ImageNet1K-V1 MobileNetV3-Small backbone, fixed C=1 balanced logistic head, 224×224 RGB. No external selection or tuning.
+
+| New inferred-photo-parent validation metric | Value |
+|---|---:|
+| Accuracy | 0.648133 |
+| Balanced accuracy | **0.672504** |
+| Macro-F1 | **0.641908** |
+| Normal recall | 0.750577 |
+| Faulty recall | 0.594431 |
+| Faulty ROC-AUC | 0.708058 |
+| Confusion matrix (actual/faulty by prediction) | [[325,108],[335,491]] |
+
+[Checkpoint `mobilenet_v3_small_photo_parent_inferred.pt` and metadata](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/mobilenet-photo-parent-inferred-v1) | [Successful training workflow](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/runs/39136623853).
+
+**Interpretation:** The mapping is inference from Photoshop-related names plus some high visual similarities, not manual audit of unaltered source photographs. Because validation consists of only five inferred photographed sources, metrics may be variable and are still exploratory. This model is NOT the model that achieved **0.635 external macro-F1** on StitchingNet earlier. No comparable external results exist for the new photo-parent model.

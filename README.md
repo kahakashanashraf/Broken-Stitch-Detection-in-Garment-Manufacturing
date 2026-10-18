@@ -79,3 +79,9 @@ We then performed the **first and only untouched StitchingNet binary external ev
 [External result JSON](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/stitchingnet-frozen-first-eval-v1) · [Complete methods, parentage mapping and limitations](docs/RESULTS_AND_LINEAGE_2026_10_18.md).
 
 **NO-GO for deployment or scientific claims of photo-source-independent accuracy.** MobileNet misses 507/1,201 real broken-stitch images. Also, further tuning evaluated against the now-inspected external StitchingNet benchmark is *not* a new untouched benchmark. The new 31-parent proposed split has **not** been used to fit this checkpoint.
+
+## Photo-parent-inferred pretrained MobileNet checkpoint (separate experiment)
+
+A second ImageNet-pretrained MobileNet-V3-Small frozen-feature + balanced logistic model has **now** been fitted on the **31-photo-parent inferred graph**: 21 candidate photo parents for training (**5,019 valid images** after removal of 1 corrupt file), 5 validation parent groups (**1,259 images**), 5 hold-out parent groups (**1,086 images NOT EVALUATED**). Validation macro-F1 **0.6419**, balanced accuracy **67.25%**, normal recall **75.06%**, broken/faulty recall **59.44%**. [Download trained checkpoint and validation metadata](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/mobilenet-photo-parent-inferred-v1).
+
+This is NOT a new StitchingNet evaluation. StitchingNet has already been inspected using the older 182-family-trained checkpoint, so subsequent tests on it would no longer be **untouched**. Human-source Photoshop provenance is still missing; do not represent photo-parent inference as verified original photography.

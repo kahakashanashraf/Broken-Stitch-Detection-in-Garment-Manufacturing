@@ -51,3 +51,11 @@ The previous scratch-CNN checkpoint remains available. Newly [pretrained MobileN
 [Photoshop parent inference](../audits/photographed_source_inference/) maps 151 faulty candidate families to 31 normal candidate photo names (filename match rate 100%); human visual/source-document verification still outstanding. **The MobileNet was NOT trained on the newly inferred 31-photo-parent split.** Full results/limitations: [research report](RESULTS_AND_LINEAGE_2026_10_18.md).
 
 The StitchingNet benchmark has now been examined. Do **not** reuse it for post-hoc model tuning and claim any subsequent assessment is untouched. Still **NO-GO** for submission-ready independent-source performance, device use or a verified photo-parent classification benchmark.
+
+## 31-photo-parent-INFERRED ImageNet MobileNet internal training finished
+
+[Successful GitHub Actions run](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/runs/39136623853) and [frozen weights](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/mobilenet-photo-parent-inferred-v1). Training (actual/faulty) 1,878/3,141 = **5,019** after excluding exactly one corrupt normal PNG. Validation (433/826) = **1,259**. Holdout 422/664 = **1,086** was **not accessed** by this training workflow.
+
+Validation ONLY: accuracy 0.648133, balanced accuracy **0.672504**, macro-F1 **0.641908**, normal recall **0.750577**, faulty recall **0.594431**, AUROC **0.708058**; matrix [[325,108],[335,491]]. This is not directly comparable with older 182-family validation or StitchingNet external scores due to different partitions, and true underlying photographs are not independently confirmed.
+
+No further StitchingNet evaluation was made. Human inspection and separate unseen-domain test remain required.
