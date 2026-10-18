@@ -16,7 +16,7 @@ jobs:
         run: python -m pip install --disable-pip-version-check gdown
       - name: Download published thesis-figure archive from the project Drive
         run: |
-          gdown --id 175IFo7qcrITfKOEPyN4zMD-EVeEG-UCK -O /tmp/thesis_extracted_figures.zip
+          gdown 'https://drive.google.com/uc?id=175IFo7qcrITfKOEPyN4zMD-EVeEG-UCK' -O /tmp/thesis_extracted_figures.zip
           echo "8347673fab549579dfc476cefc2e08957a93e2265b127b9e5f71f34b2cd63965  /tmp/thesis_extracted_figures.zip" | sha256sum -c -
           python - <<'PY'
           import zipfile
