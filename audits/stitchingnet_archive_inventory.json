@@ -1,0 +1,147 @@
+{
+  "archive_md5": "51b228d9572b925035e9e9af01c96569",
+  "n_archive_members": 14565,
+  "n_labelled_images": 14565,
+  "class_codes_counts": {
+    "00": 2436,
+    "01": 1239,
+    "10": 1203,
+    "02": 1201,
+    "03": 1192,
+    "04": 1230,
+    "05": 1173,
+    "06": 1240,
+    "07": 1162,
+    "08": 1232,
+    "09": 1257
+  },
+  "binary_subset_classes": {
+    "00": "actual",
+    "02": "faulty"
+  },
+  "n_binary": 3637,
+  "fabric_counts_binary": {
+    "00": {
+      "A": 220,
+      "B": 220,
+      "C": 200,
+      "D": 203,
+      "E": 250,
+      "F": 227,
+      "G": 217,
+      "H": 221,
+      "I": 200,
+      "J": 263,
+      "K": 215
+    },
+    "02": {
+      "A": 112,
+      "B": 117,
+      "C": 107,
+      "D": 102,
+      "E": 102,
+      "F": 108,
+      "G": 103,
+      "H": 120,
+      "I": 103,
+      "J": 119,
+      "K": 108
+    }
+  },
+  "sample_paths": [
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_001.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "001"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_002.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "002"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_003.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "003"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_004.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "004"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_005.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "005"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_006.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "006"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_007.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "007"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_008.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "008"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_009.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "009"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_010.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "010"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_011.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "011"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_012.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "012"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_013.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "013"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_014.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "014"
+    },
+    {
+      "entry": "StitchingNet/A. Cotton-Poly/0. Normal/A_00_015.jpg",
+      "class": "00",
+      "fabric": "A",
+      "sample": "015"
+    }
+  ],
+  "ignored_entries_sample": [],
+  "source": "https://zenodo.org/records/20352813",
+  "license": "CC BY-NC 4.0 per official StitchingNet GitHub",
+  "evaluation_performed": false
+}
