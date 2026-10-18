@@ -1,0 +1,33 @@
+name: Audit augmentation family split contamination
+on:
+  push:
+    paths:
+      - .github/workflows/audit-lineage.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  candidate-lineage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download published original archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/data
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/data
+          test "$(stat -c%s /tmp/data/dataset.zip)" -eq 2146784353
+      - name: Detect parent filename families across existing splits
+        run: |
+          python code/scripts/audit_lineage_in_zip.py --zip /tmp/data/dataset.zip --out audits/candidate_parent_overlap_2026_10_18.json
+      - name: Commit leakage audit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add audits/candidate_parent_overlap_2026_10_18.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish filename-parent split contamination audit'
+            git push
+          fi
