@@ -33,7 +33,7 @@ def _predict(model,loader,device):
 
 def _manifest_fingerprint(df):
     # Split membership invariant under dataframe row permutation, relative paths are explicit.
-    rows=sorted(f'{r.path}\t{r.label}\t{r.source_id}\t{r.split}' for r in df.itertuples(index=False))
+    rows=sorted(f'{getattr(r, "relative_path", None) or r.path}\t{r.label}\t{r.source_id}\t{r.split}' for r in df.itertuples(index=False))
     return hashlib.sha256('\n'.join(rows).encode('utf-8')).hexdigest()
 
 

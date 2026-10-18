@@ -44,3 +44,16 @@ def test_manifest_tampering_detected(tmp_path):
     df.to_csv(manifest,index=False)
     with pytest.raises(ValueError,match='Manifest differs'):
         evaluate(ckpt,str(manifest),part='test')
+
+
+def test_split_fingerprint_portable_relative_paths():
+    import pandas as pd
+    from broken_stitch.engine import _manifest_fingerprint
+    a = pd.DataFrame([
+        {'path':'/tmp/run1/archive/train/img1.png','relative_path':'archive/train/img1.png','label':'actual','source_id':'orig-A','split':'train'},
+        {'path':'/tmp/run1/archive/test/img2.png','relative_path':'archive/test/img2.png','label':'faulty','source_id':'orig-B','split':'test'}])
+    b=a.copy()
+    b['path']=b.path.str.replace('/tmp/run1','/other/computer',regex=False)
+    assert _manifest_fingerprint(a)==_manifest_fingerprint(b)
+    b.loc[0,'source_id']='changed'
+    assert _manifest_fingerprint(a)!=_manifest_fingerprint(b)

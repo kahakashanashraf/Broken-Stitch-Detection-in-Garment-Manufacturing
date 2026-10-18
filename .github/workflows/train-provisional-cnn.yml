@@ -1,0 +1,109 @@
+name: Train provisional family-grouped CNN on original archive
+on:
+  push:
+    paths:
+      - .github/workflows/train-provisional-cnn.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 105
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install reproducibility dependencies (CPU)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r code/requirements.txt
+          python -m pip install -e code/
+      - name: Download source dataset from GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/data
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/data
+          test "$(stat -c%s /tmp/data/dataset.zip)" -eq 2146784353
+      - name: Safely extract archive and prepare completely new candidate family splits
+        run: |
+          python - <<'PY'
+          from pathlib import Path,PurePosixPath
+          from zipfile import ZipFile
+          out=Path('/tmp/data/extracted');out.mkdir(parents=True,exist_ok=True)
+          with ZipFile('/tmp/data/dataset.zip') as z:
+              for info in z.infolist():
+                  p=PurePosixPath(info.filename)
+                  if p.is_absolute() or '..' in p.parts or '\\' in info.filename: raise ValueError('Unsafe ZIP path '+info.filename)
+              z.extractall(out)
+          PY
+          python code/scripts/prepare_grouped_candidate_split.py --root /tmp/data/extracted --outdir /tmp/bs_run
+      - name: Train CNN from scratch on strictly candidate-grouped data (NOT paper evidence)
+        run: |
+          python -m broken_stitch.cli train \
+            --manifest /tmp/bs_run/candidate_group_splits.csv \
+            --outdir /tmp/bs_run/cnn \
+            --model cnn --activation relu --epochs 5 --patience 2 \
+            --batch-size 32 --workers 2 --lr 0.001 --device cpu \
+            | tee /tmp/bs_run/train_stdout.log
+      - name: Frozen exploratory candidate-family test
+        run: |
+          python -m broken_stitch.cli evaluate \
+            --manifest /tmp/bs_run/candidate_group_splits.csv \
+            --checkpoint /tmp/bs_run/cnn/best.pt \
+            --split test --out /tmp/bs_run/exploratory_test_results.json \
+            | tee /tmp/bs_run/eval_stdout.log
+      - name: Attach complete provenance metadata
+        run: |
+          cat > /tmp/bs_run/MODEL_CARD.md <<'EOF'
+          # PROVISIONAL broken-stitch CNN weights — research development ONLY
+
+          These actual model weights were trained from scratch on the team's publicly released original image ZIP, using newly generated candidate-family-exclusive train/validation/test partitions derived from filenames.
+
+          **CRITICAL:** Family identity was inferred by stripping trailing UUIDs from augmented filenames; true photographed-source/Photoshop lineage is NOT verified. The old archive's train/validation/test folders contained candidate-family leakage for 182/182 groups and were intentionally IGNORED. An external StitchingNet evaluation is NOT performed. The exploratory test metrics are NOT publication-ready or independent-source performance. Do not use for garment safety decisions or present as the thesis's original 2022 model.
+
+          Classes: `actual=0`, `faulty=1`. Input: 100x100 RGB, 0–1 float, torchvision-style `ToTensor`, optional train-only augmentation. Architecture: rebuilt `SmallCNN` defined in `code/broken_stitch/models.py` at the GitHub commit in `checkpoint_provenance.json`.
+
+          `best.pt` holds the trained `model_state`, model config including a portable split fingerprint, best epoch, and best validation metrics; load with `torch.load(..., weights_only=True)` using a trusted copy of this repository.
+          `candidate_group_splits_portable.csv` records candidate family and partition for every valid image. Restore archive under any directory and resolve each `relative_path` before reevaluation. Never silently infer cross-class source identity.
+          EOF
+          python - <<'PY'
+          import json,hashlib,os,pathlib,torch
+          f=pathlib.Path('/tmp/bs_run/cnn/best.pt')
+          ck=torch.load(f,map_location='cpu',weights_only=True)
+          d={'model':'SmallCNN (new PyTorch reconstruction)','weights_type':'TRAINED_FROM_SCRATCH_ON_UNVERIFIED_CANDIDATE_GROUP_SPLIT',
+             'provisional':True,'submission_ready':False,'source_zip_file_size_bytes':2146784353,
+             'checkpoint_sha256':hashlib.file_digest(f.open('rb'),'sha256').hexdigest(),
+             'checkpoint_bytes':f.stat().st_size,'best_epoch':ck['best_epoch'],
+             'code_git_commit':os.environ.get('GITHUB_SHA',''),'split_fingerprint':ck['config']['split_hash'],
+             'limitations':'Parent source group inferred from filename, not verified underlying Photoshop/real-image lineage.'}
+          pathlib.Path('/tmp/bs_run/checkpoint_provenance.json').write_text(json.dumps(d,indent=2))
+          print(d)
+          PY
+      - name: Publish trained checkpoint and metadata as GitHub prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG='exploratory-cnn-candidate-family-v1'
+          if ! gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+              --title 'Trained exploratory CNN — source provenance UNVERIFIED' \
+              --notes 'Real weights trained on the released thesis ZIP. UUID-filename-family exclusive split only; original photographs/Photoshop lineage not verified. NOT publication-ready, NOT thesis original weights.' \
+              --prerelease --latest=false
+          fi
+          gh release upload "$TAG" \
+            /tmp/bs_run/cnn/best.pt \
+            /tmp/bs_run/cnn/history.json \
+            /tmp/bs_run/cnn/run_config.json \
+            /tmp/bs_run/candidate_group_splits_portable.csv \
+            /tmp/bs_run/candidate_split_report.json \
+            /tmp/bs_run/exploratory_test_results.json \
+            /tmp/bs_run/checkpoint_provenance.json \
+            /tmp/bs_run/MODEL_CARD.md \
+            --repo '${{ github.repository }}' --clobber
+          gh release view "$TAG" --repo '${{ github.repository }}' --json url,assets -q '{url:.url,assets:[.assets[]|{name:.name,size:.size}]}'
