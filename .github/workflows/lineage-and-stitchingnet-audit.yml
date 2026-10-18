@@ -1,0 +1,62 @@
+name: Audit photographed-source candidates and StitchingNet archive (NO EXTERNAL EVALUATION)
+on:
+  push:
+    paths:
+      - '.github/workflows/lineage-and-stitchingnet-audit.yml'
+      - 'code/scripts/lineage_visual_audit.py'
+      - 'code/scripts/stitchingnet_archive_inventory.py'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  photo-parent-candidates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install light audit dependencies
+        run: pip install pillow numpy opencv-python-headless
+      - name: Download published thesis ZIP from our release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/raw
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/raw
+          test "$(stat -c%s /tmp/raw/dataset.zip)" -eq 2146784353
+      - name: Generate ranked PHOTO-SOURCE candidates and visual contact sheets
+        run: |
+          python code/scripts/lineage_visual_audit.py --zip /tmp/raw/dataset.zip --out /tmp/lineage
+      - name: Publish review artifacts, NOT verified parent assignments
+        run: |
+          mkdir -p audits/photo_lineage_review
+          cp /tmp/lineage/* audits/photo_lineage_review/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add audits/photo_lineage_review/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Add visual photo-lineage candidate review (no verified parent assignments)'
+            for i in 1 2 3; do git pull --rebase origin main; git push && break; sleep 5; done
+          fi
+  stitchingnet-archive-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download original StitchingNet archive (official Zenodo deposit)
+        run: |
+          curl -L --retry 3 --retry-delay 5 --fail 'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' -o /tmp/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/StitchingNet.zip' | md5sum -c -
+      - name: Verify the publisher class layout (DO NOT EVALUATE MODEL)
+        run: |
+          python code/scripts/stitchingnet_archive_inventory.py --zip /tmp/StitchingNet.zip --out /tmp/stitchingnet_archive_inventory.json
+      - name: Publish metadata-only inventory
+        run: |
+          mkdir -p audits
+          cp /tmp/stitchingnet_archive_inventory.json audits/stitchingnet_archive_inventory.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add audits/stitchingnet_archive_inventory.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'Verify official StitchingNet label layout and checksum (no test results)'
+            for i in 1 2 3; do git pull --rebase origin main; git push && break; sleep 5; done
+          fi
