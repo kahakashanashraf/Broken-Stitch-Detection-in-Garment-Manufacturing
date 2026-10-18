@@ -1,0 +1,24 @@
+# Experiment outputs and private/raw datasets
+/data/
+**/data/
+**/runs/
+**/results/
+**/checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.zip
+!paper/figures_original_thesis.zip
+*.csv
+!code/examples/*.csv
+*.log
+__pycache__/
+.pytest_cache/
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+paper/*.aux
+paper/*.out
+paper/*.log
+paper/*.synctex.gz

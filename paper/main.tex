@@ -1,0 +1,204 @@
+% ICEEICT 2027 RESEARCH-EXTENSION WORKING DRAFT, NOT submission cleared; user IEEEtran.cls.
+% Anonymous review version. Historical thesis results, NOT rerun.
+\documentclass[conference,a4paper]{IEEEtran}
+\usepackage{graphicx,booktabs,array,cite,amsmath,amssymb,url}
+\usepackage[hidelinks,pdfauthor={},pdfsubject={Anonymous manuscript for ICEEICT 2027},pdfkeywords={broken stitch detection, convolutional neural networks}]{hyperref}
+% Historical thesis images are distributed separately pending rights verification.
+% The working paper still compiles with clearly labelled empty-image placeholders.
+\newcommand{\paperfig}[2]{%
+  \IfFileExists{#1}{\includegraphics[width=#2]{#1}}{%
+    \fbox{\parbox[c][1.25cm][c]{#2}{\centering\scriptsize Historical thesis figure\\not included in public repo}}}}
+\begin{document}
+\title{Reassessing CNN-Based Broken Stitch Detection: Historical Results and a Source-Disjoint Evaluation Protocol}
+\author{} % ICEEICT double-blind submission: identities omitted from the review PDF
+\maketitle
+\begin{abstract}
+Broken-stitch inspection is a challenging image-classification problem when labelled, independently acquired defects are scarce. This paper revisits an unpublished 2022 thesis comparing convolutional neural network (CNN) activations, image filters and VGG-16 transfer learning. The thesis described 181 initial image records, some digitally edited faults and extensive augmentation; image counts across its methods and results sections are inconsistent. It reported 85.35\% accuracy for a ReLU CNN and 94.91\% validation accuracy for the final VGG-16 configuration. These historical measurements were not independently reproduced, and source-disjoint testing was not established. In light of newer datasets and methods, we formulate a source-aware validation protocol with all transformations grouped by original image and an external binary benchmark using only normal and broken-stitch categories from StitchingNet (2,436 and 1,201 published images, respectively). The design separates historical evidence from prospective experiments, specifies class-wise metrics and leakage checks, and defines conditions for credible synthetic-to-real generalization claims. \emph{The proposed evaluation has not yet been executed, and no new performance scores are claimed.}
+\end{abstract}
+\begin{IEEEkeywords}
+broken stitch detection, synthetic-to-real generalization, source-disjoint validation, VGG-16, StitchingNet
+\end{IEEEkeywords}
+\section{Introduction}
+Broken and irregular stitches affect the quality of manufactured garments. Routine inspection is often performed visually by operators, whose evaluations can vary with fatigue and image conditions. Image-based automated inspection has the potential to help identify visible seam defects while maintaining consistency across inspections. Unlike general fabric-texture defects, a broken stitch can present as a small interruption in a repeated line-like pattern. Such interruptions may be confused with naturally long stitch spacing, thread colour changes or image magnification.
+
+CNNs have demonstrated utility in image classification~\cite{alexnet}, whereas transfer learning enables visual representations pretrained on large datasets to be reused when task-specific training data are scarce~\cite{yosinski,vgg}. In sewing inspection, however, collecting a sufficiently diverse image set is challenging. As a result, studies may employ transformations and digitally constructed defects to enlarge training collections~\cite{augment}. Whether these derivatives represent independent visual evidence is a separate methodological question.
+
+This paper reports the historical experiments of an unpublished 2022 thesis and specifies a more rigorous follow-up protocol. The proposed research contribution, if executed, would be a controlled comparison of random image splitting, parent-image-disjoint splitting and external evaluation on real sewing images. We do not claim a new architecture or any new measured performance; the historical validation scores are not verified external-test results.
+
+\subsection{Scope and research questions}
+Two retrospective questions concern the reported effects of image preprocessing and VGG-16. Three \emph{prospective} questions are: (RQ1) does source-disjoint splitting substantially change measured quality compared with image-level random splitting; (RQ2) do classifiers trained on partly edited defects generalize to independent normal and broken-stitch images; and (RQ3) how do a CNN, VGG-16 and a lightweight pretrained baseline compare under fixed data partitions and metrics? These prospective questions remain unanswered.
+
+The approach is applicable to image-based screening in the garment sector because it targets a recognizable inspection problem using photographs rather than requiring an instrumented production line. Nevertheless, the inference task is classification of a supplied image, not real-time localization of the stitch on a moving garment. The distinction matters: a classifier can label an image that already frames a seam but does not specify the position and extent of the discontinuity for an operator.
+
+\section{Related Work}
+Earlier textile-defect detection approaches frequently relied on engineered texture descriptors and image processing. Ngan \emph{et al.} surveyed automated fabric inspection methods~\cite{ngan}; Jing \emph{et al.} investigated Gabor and texture-based descriptors~\cite{jing}. A recent survey addresses image acquisition, preprocessing, and dataset challenges in textile inspection~\cite{heReview}. Sewing-stitch recognition is related but differs from general fabric-surface inspection in both its defect geometry and acquisition conditions.
+
+Kim \emph{et al.} employed CNN feature maps and image-processing techniques for broken-stitch detection and considered constructed defective images~\cite{kim}. Their VGG-based approach is close to the method explored here, so VGG-16 usage alone cannot constitute novelty. A 2024 conference study compared CNN, VGG-16 and VGG-19 for broken-stitch detection~\cite{chowdhury}. More recently, StitchingNet introduced 14,565 images across eleven stitch classes and transfer-learning-based approaches for stitch-defect recognition~\cite{stitchingnet}. These studies are important context: accuracies on different collections and evaluation protocols cannot be directly ranked. Recent patch-level anomaly detection with fine-tuned ResNet backbones~\cite{patchcore2026} and pixel-annotated StitchingNet-Seg~\cite{stitchingnetseg2026} additionally illustrate the field's shift toward robust transfer and localization. Our focus is deliberately narrower: binary normal/broken classification with rigorous cross-dataset testing.
+
+\begin{table}[!t]
+\centering
+\caption{Context of related stitch-defect studies (distinct protocols; not a head-to-head ranking).}
+\label{tab:related}
+\setlength{\tabcolsep}{2.5pt}
+\scriptsize
+\begin{tabular}{p{.23\columnwidth}p{.29\columnwidth}p{.35\columnwidth}}
+\toprule
+Study & Data and task & Approach \\
+\midrule
+Kim \emph{et al.}~\cite{kim} & Sewing images, constructed faults and rotations & VGG-16 feature-map method \\
+Chowdhury \emph{et al.}~\cite{chowdhury} & 500 normal/broken-stitch images & CNN, VGG-16 and VGG-19 \\
+Jung \emph{et al.}~\cite{stitchingnet} & 14,565 images; 11 stitch classes & Transfer learning with CNNs and vision transformers \\
+This study & 181 reported base image records; binary task & Filters, activation comparisons, VGG-16 and ensemble \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Position relative to prior studies}
+Kim \emph{et al.}~\cite{kim} and the later CNN comparison~\cite{chowdhury} both study broken-stitch identification, making it essential to avoid a priority claim for the use of pretrained CNN features. The 2022 work discussed here did not establish a novel feature extractor or a publicly benchmarked detector. Its narrower methodological interest is that, within one development effort, its authors tested smoothing alternatives, several CNN activation configurations, and classifiers built upon pretrained features. The original work is an application rather than a novel architecture or a large-scale corpus. The proposed extension targets evaluation validity, not a claim of stronger accuracy than earlier publications. Without fresh results demonstrating meaningful insight, publication novelty is still unestablished.
+
+\section{Materials and Methods}
+\subsection{Images and data augmentation}
+The thesis reports 181 initial stitch images, described as 31 correct and 150 faulty. Samples were assembled from garment-related and internet sources; because corresponding real faults were difficult to obtain, faulty examples were constructed in image-editing software. Thus, the 181-image figure must not automatically be interpreted as 181 independent camera acquisitions. Figure~\ref{fig:samples} reproduces representative sample images from the thesis.
+
+\begin{figure}[!t]
+\centering
+\begin{minipage}{.48\columnwidth}\centering\paperfig{figures/page33_image1.jpeg}{\linewidth}\\[-1mm]{\scriptsize (a) Correct stitches}\end{minipage}\hfill
+\begin{minipage}{.48\columnwidth}\centering\paperfig{figures/page33_image2.jpeg}{\linewidth}\\[-1mm]{\scriptsize (b) Edited faulty stitches}\end{minipage}
+\caption{Representative correct and faulty stitch examples reproduced from the original thesis (Figs. 4.3--4.4). The faulty examples include digitally constructed defects.}\label{fig:samples}
+\end{figure}
+
+Training material was enlarged with geometric transformations including translation, rotation, cropping, flipping, scaling, shearing and skewing. These are conventional label-preserving augmentation strategies~\cite{augment}, although their semantic validity depends on whether the defect remains visible. Images were described as resized to $100\times100$ pixels and pixel intensities scaled by $1/255$. The thesis mentions 20,000 augmented examples in the methodology, 10,000 in its experiment narrative and 9,134 loaded images (7,862 training and 1,272 testing) later in the same chapter. These quantities are reported without forcing an unsupported reconciliation. Because source-image lineage and partition construction have not been verified, augmented variants crossing train and evaluation partitions remain a potential validity threat.
+
+\subsection{Image formation, classes, and data accounting}
+An input image $x$ was assigned one of two labels, $y\in\{\text{normal},\text{faulty}\}$. Photographs of intact seams show repeated thread or stitch segments; visually edited faulty examples simulate breaks in those repeated patterns. The paired normal/faulty examples in Fig.~\ref{fig:samples} make the distinction observable, but they also expose a possible shortcut: altered pictures can contain editing cues unrelated to physical thread rupture. The thesis does not describe an annotation protocol for multiple raters, capture-device metadata, or independent checking of defects. Consequently, label reliability and the relationship between synthetic and naturally occurring defects cannot be quantified from the historical record.
+
+Three levels of data quantity must be kept separate: original collected or edited image records, transformed or augmented image samples, and examples loaded for a particular run. The methodology gives $20{,}000$ at the augmentation stage, while the experimental narrative refers to $10{,}000$ and the loader description to $9{,}134$. For that last report, $7{,}862+1{,}272=9{,}134$, corresponding to approximately $86.1\%$ training and $13.9\%$ testing samples; these are counts of loaded records, not verified counts of independent original photographs. The thesis's displayed class-share diagram attributes about $14.2\%$ of observations to actual stitches and $85.8\%$ to faulty stitches. We do not infer exact per-class counts from these rounded percentages.
+
+The appropriate unit of splitting would be an original photographed seam (or a more conservative acquisition session), not one augmentation derivative. For clarity, let $g(x)$ designate a base-image group. Leakage-resistant separation would require $\{g(x):x\in D_{\rm train}\}\cap\{g(x):x\in D_{\rm test}\}=\varnothing$. This expression describes a recommended validation condition; the available manuscript cannot certify that the original experiment met it.\par
+
+\subsection{Augmentation parameters from the thesis}
+The thesis describes both normalization and geometric transformations. It gives pixel scaling of $1/255$ and a schematic with left/right rotation settings of five, left/right flip options, a shearing setting of 25 on one branch, and a skew value of 0.5. These parameters are transcribed from the chapter's diagram, not verified against source code; their exact units and implementation are not always clear. Rotation or flipping may model imaging viewpoint changes, while aggressive shear can create images unlike seams encountered in normal inspection. There is no evidence that augmentation transformations were tuned with a strictly independent test partition.
+
+
+\subsection{Filtering and convolutional classification}
+The preprocessing study contrasted bilateral, Gaussian and a condition described as a salt-and-pepper filter. The latter term is ambiguous in the thesis because its description combines impulse-noise generation and median denoising. The CNN used convolutional layers with $3\times3$ kernels and $2\times2$ max pooling, followed by learned classification layers; dropout~\cite{dropout} and batch normalization~\cite{batchnorm} were also discussed in the original model design. Six activation configurations were evaluated: ReLU, Softmax, Tanh, Sigmoid, SELU and ELU. The thesis describes Adam optimization~\cite{adam} with sparse categorical cross-entropy. Exact per-experiment layer sequences, seeds and run configurations are unavailable in the written source.
+
+\subsection{Classifier learning and objectives}
+The source describes feature extraction through multiple convolutional layers. A $3\times3$ kernel acts locally on nearby pixels, while $2\times2$ max pooling reduces feature-map spatial dimensions. Nonlinear activations allow a stack of linear filters to model the complex relationships among stitching patterns. The work compared ReLU, hyperbolic tangent, sigmoid, softmax, SELU, and ELU, but it does not state that all experimental hyperparameters were held fixed across runs. Softmax is ordinarily used at the output for a two-class probability vector; presenting it as a comparable hidden activation condition therefore requires caution about architectural equivalence.
+
+The loss named in the thesis is sparse categorical cross-entropy. For two class probabilities $p_{i,c}$ and a class index $y_i$, a conventional expression is
+\begin{equation}
+\mathcal{L}=-\frac1N\sum_{i=1}^{N}\log p_{i,y_i}.
+\end{equation}
+This describes the named objective and is not recovered runnable code. The thesis also reports dropout at $25\%$ and describes batch normalization, but it does not give sufficient model-specific layer information to reproduce the number of parameters or the training schedule. Adam is identified as the optimizer. Differences in accuracy might therefore reflect multiple configuration choices, not solely activation type.
+
+\subsection{Pretrained VGG-16 and ensemble}
+The thesis further used ImageNet-pretrained VGG-16 feature extraction \cite{vgg}, training a shallow neural classifier on the resulting representations. An ensemble of classifiers trained on subsets of the data was then reported, followed by a final VGG-16-based multilayer configuration. The description does not establish which VGG layers were frozen, the total ensemble size, or whether a completely untouched test set was retained. The reported results are therefore presented as they appear in the thesis rather than as newly reconstructed evaluations.
+
+\subsection{Analysis protocol and evidentiary boundary}
+The results below are transcribed from the thesis's experiment chapter, rather than derived from newly run code. A ``training accuracy'' reflects prediction on training examples; a ``validation accuracy'' reflects the evaluation subset the original authors called validation. The thesis sometimes alternates the words testing and validation, so we retain its reported terminology without asserting that the subset was held out throughout model development. We also avoid cross-study accuracy rankings because the dataset composition, class balance, and image acquisition conditions can differ substantially. When the underlying counts or per-run settings were unavailable, we did not reconstruct them from the appearance of a plotted curve.
+
+\subsection{Proposed leakage-aware experimental extension}
+The reconstructed code supports an experiment that has \emph{not yet been run on the thesis data}. First, the original archive must be inventoried and each captured image, Photoshop derivative and augmented view assigned to its true parent-source identifier. Identical files and near duplicates must be reviewed. All variants of one source are then confined to a single train, validation or test group; augmentation is applied only to the training partition. A random-image split may be used only as a labelled diagnostic, never as the primary performance claim.
+
+Under fixed splits and seeds, the custom CNN, ImageNet-pretrained VGG-16 and one compact ImageNet-pretrained baseline should be trained with matched selection criteria. Validation macro-F1 determines checkpoint selection; the locked test partition is evaluated once. Class-wise precision, recall, macro-F1, balanced accuracy, ROC-AUC and PR-AUC, confusion matrices, and group-aware uncertainty intervals should be reported. The failure modes of long stitch intervals, zoom, lighting and texture should be examined using a predeclared error taxonomy.
+
+For external validation, the 2025 StitchingNet dataset has 2,436 normal images and 1,201 images specifically labelled broken stitch~\cite{stitchingnet}. These form the proposed \emph{binary} external benchmark; its nine other defective categories must not be relabelled ``broken.'' After model and threshold selection are frozen on the thesis data, evaluate the unchanged checkpoint on StitchingNet exactly once. Training on StitchingNet would constitute a separate transfer experiment, \emph{not} independent external testing. A class/split/duplicate audit and source-domain disclosure are required before either claim.
+
+\begin{table}[!t]\centering
+\caption{Evaluation design (planned; no results available).}\label{tab:protocol}
+\setlength{\tabcolsep}{3pt}\scriptsize
+\begin{tabular}{p{.29\columnwidth}p{.57\columnwidth}}\toprule
+Setting & Purpose and safeguards \\\midrule
+Image-level random split & Historical diagnostic only; cannot support independence claims \\
+Parent-source-disjoint test & Primary internal metric; derivatives confined to one partition \\
+StitchingNet external test & Frozen model; 2,436 normal/1,201 broken in published dataset; no tuning \\
+Metrics & Macro-F1, balanced accuracy, broken recall, PR-AUC; show class supports \\
+\bottomrule\end{tabular}
+\end{table}
+
+\section{Results and Discussion}
+\subsection{Image filtering}
+Table~\ref{tab:filters} reproduces the original filtering comparison. Gaussian filtering yielded the highest tabulated validation accuracy, 80.00\%, while bilateral filtering attained a much higher training score but only 79.50\% validation accuracy. The thesis also states 84.00\% Gaussian validation accuracy in adjacent text; this inconsistency must be resolved from underlying experiment records before final submission.
+
+\begin{table}[!t]\centering\caption{Historical filter comparison reported in the thesis.}\label{tab:filters}\footnotesize
+\begin{tabular}{lcc}\toprule Filter condition & Train acc. (\%) & Val. acc. (\%)\\\midrule Bilateral & 99.25 & 79.50\\ Gaussian & 93.12 & 80.00\\ Salt-and-pepper-related & 94.63 & 76.00\\\bottomrule\end{tabular}
+\end{table}
+
+The roughly twenty-percentage-point gap between bilateral training and validation accuracy (99.25\% versus 79.50\%) is particularly important. It indicates that the model fit the observed training examples far more closely than the reported validation examples in that condition. Gaussian preprocessing yielded a smaller corresponding gap (93.12\% versus 80.00\%), though the final reported validation performance remained substantially below training. The experiments provide a useful descriptive comparison, but no repeated folds, uncertainty intervals or controlled filter parameter study was recorded. Thus the evidence supports only a within-report observation, not a statistically established preference for Gaussian filtering.
+
+
+\subsection{Activation-function comparison}
+Table~\ref{tab:activations} gives the thesis's reported CNN accuracy figures. ReLU scored highest at 85.35\%, followed by SELU and Tanh. However, the absence of repeated-seed tests and exact matched-partition documentation prevents treating these small variations as conclusive differences between nonlinearities.
+
+\begin{table}[!t]\centering\caption{Reported accuracy in the CNN activation comparison.}\label{tab:activations}\footnotesize
+\begin{tabular}{lrlr}\toprule Activation & Acc. (\%) & Activation & Acc. (\%)\\\midrule ReLU & 85.35 & Softmax & 82.94\\ Tanh & 84.38 & Sigmoid & 82.63\\ SELU & 84.47 & ELU & 81.74\\\bottomrule\end{tabular}
+\end{table}
+
+The ReLU result is $0.88$ percentage points above SELU and $0.97$ points above Tanh. Such small differences might reverse under another random initialization or source partition, especially when the effective number of independent scenes is limited. The table therefore identifies a leading run rather than demonstrating that one activation is generally better. Moreover, the thesis lacks class-specific accuracy, making it unclear whether improvement on faulty stitches came at the expense of falsely rejecting normal samples.
+
+
+\subsection{Transfer learning and error analysis}
+The original thesis described a custom-model training accuracy of approximately 95.96\% against 85.00\% testing accuracy. This gap suggests overfitting or distribution differences, rather than the underfitting label used in the thesis. VGG-16 feature-based and ensemble approaches subsequently produced higher reported validation accuracies, as summarized in Table~\ref{tab:models}.
+
+\begin{table}[!t]\centering\caption{VGG-16 experiments: historical thesis metrics, not independently verified.}\label{tab:models}\footnotesize
+\begin{tabular}{p{.53\columnwidth}cc}\toprule Method & Train (\%) & Val. (\%)\\\midrule VGG features + shallow NN &95.79&91.48\\ Neural-network ensemble &96.63&93.00\\ Final VGG-16 configuration &98.71&94.91\\\bottomrule\end{tabular}
+\end{table}
+
+The final VGG-16 result of 94.91\% is a \emph{reported validation} accuracy, not an independently confirmed real-world test score. Figure~\ref{fig:curves} reproduces its original learning curves. Because comparisons were not confirmed to use identical partitions, differences with the 85.35\% activation-study result cannot be interpreted as a controlled improvement attributable solely to VGG-16.
+
+\begin{figure}[!t]\centering
+\paperfig{figures/page67_image1.png}{.94\columnwidth}
+\caption{Original VGG-16 training and validation curves (thesis Fig. 5.18). The plot is historical evidence rather than a rerun.}\label{fig:curves}\end{figure}
+
+The original error analysis highlighted normal stitches with longer-than-usual spacing and magnified images as frequent misclassifications. Figure~\ref{fig:cm} shows the original confusion-matrix graphic, for which raw predictions were not recovered. Given the imbalanced original category counts, class-wise recall and macro-F1 would be more informative than accuracy alone.
+
+\begin{figure}[!t]\centering
+\paperfig{figures/page64_image1.png}{.70\columnwidth}
+\caption{Original CNN confusion-matrix visualization (thesis Fig. 5.14); reproduced as historical evidence.}\label{fig:cm}\end{figure}
+
+\subsection{Interpretation of the final model comparison}
+For the VGG-based trials, the reported validation progression is 91.48\% for a feature-based classifier, 93.00\% for the ensemble, and 94.91\% for the final multilayer configuration. These numbers are consistent with the original authors' account that pretrained representations and more expressive classification heads were useful during development. They do not identify the contribution of pretrained weights separately from different model capacity, augmentation settings, tuning decisions or data partitions. The final train/validation gap is $3.80$ percentage points (98.71\% versus 94.91\%), but even a small such gap would not by itself exclude near-duplicate leakage.
+
+The qualitative error analysis states that normal stitches with long intervals and close-up image views were commonly mistaken for faulty samples. This suggests the model's output might depend on apparent spacing and scale, rather than only on whether thread continuity was physically disrupted. If deployed as a screening tool, false positives on intact garments would increase manual reinspection, while false negatives on broken seams would allow defects to pass. Both kinds of error should be measured independently; a single overall accuracy cannot express these operational trade-offs.
+
+The source-disjoint and cross-dataset evaluation specified above would distinguish retrospective accuracy from performance on held-out real sewing photographs. Its outcomes have not yet been measured.
+
+
+\section{Limitations and Conclusion}
+This study's primary limitation is the small number of source images relative to its augmentation-derived sample counts. Some defective examples were constructed rather than photographed, limiting claims about authentic production faults. The source-level train/test separation is not documented sufficiently to rule out similarity leakage from transformed versions of the same photograph. Moreover, contradictory image counts (20,000, 10,000 and 9,134) and the Gaussian filtering 80/84\% discrepancy require reconciliation. Original code, checkpoint files and raw predictions have not been recovered; therefore model comparisons cannot yet be independently reproduced. No online factory trial or authentic-defect external benchmark has yet been completed. The proposed protocol describes necessary experiments but supplies no new evidence of deployment reliability.
+
+\subsection{Threats from dataset and measurement design}
+\textit{Construct validity:} the binary faulty class combines visually edited defects and the broader concept of real stitch failure; the degree of agreement between these concepts is unmeasured. \textit{Internal validity:} augmentation lineage, run conditions and model-selection history are not recorded comprehensively. \textit{External validity:} fabric diversity, imaging conditions and independent garment factories were not assessed. \textit{Statistical validity:} the original report lacks uncertainty intervals and a fully reconciled confusion matrix. These threats prevent extrapolation from nominal validation accuracy to field reliability.
+
+The original training scripts are unavailable for independent re-execution. Therefore, the 94.91\% metric must remain identified as reported validation accuracy rather than be represented as an independent real-world test result.
+
+
+\noindent\textbf{Conclusion.}
+This work examined a CNN-based binary stitch classifier and experiments involving image filtering, activation functions, VGG-16 transfer learning and neural-network ensembles. The thesis reported the best activation comparison with ReLU at 85.35\%, and its strongest final VGG-16 configuration achieved 94.91\% validation accuracy (98.71\% training accuracy). These results suggest that transferred visual features can be useful on small stitch-image collections. The updated protocol requires a reconciled source-image inventory, leakage-safe evaluation and an untouched binary StitchingNet external benchmark. Only after these experiments have been completed can we assess generalization; the currently reported 94.91\% remains a thesis-era validation figure.
+
+% Anonymous review version; the co-authors are provided in SUBMISSION_CHECKLIST.md.
+% Generative-AI disclosure is a factual use description; authors must personally
+% review/approve and check organizer restrictions before submission.
+\section*{Generative-AI Use Disclosure}
+ChatGPT was used to assist with manuscript drafting, language editing, and LaTeX preparation. It was not used to generate experimental observations or numerical results. Scientific interpretation, citation verification, and final approval remain the responsibility of the authors.
+
+\begin{thebibliography}{00}
+\bibitem{ngan} H. Y. T. Ngan, G. K. H. Pang, and N. H. C. Yung, ``Automated fabric defect detection---A review,'' \emph{Image Vis. Comput.}, vol. 29, no. 7, pp. 442--458, 2011, doi: 10.1016/j.imavis.2011.02.002.
+\bibitem{jing} J. Jing, H. Zhang, J. Wang, P. Li, and J. Jia, ``Fabric defect detection using Gabor filters and defect classification based on LBP and Tamura method,'' \emph{J. Text. Inst.}, vol. 104, no. 1, pp. 18--27, 2013, doi: 10.1080/00405000.2012.692940.
+\bibitem{heReview} F. He, B. Xin, Z. Zhan, W. Yang, and J. Liu, ``A review of fabric defect detection in textile manufacturing,'' \emph{J. Text. Inst.}, vol. 117, no. 2, pp. 327--345, 2026, doi: 10.1080/00405000.2025.2502188.
+\bibitem{kim} H. Kim, W.-K. Jung, Y.-C. Park, J.-W. Lee, and S.-H. Ahn, ``Broken stitch detection method for sewing operation using CNN feature map and image-processing techniques,'' \emph{Expert Syst. Appl.}, vol. 188, art. 116014, 2022, doi: 10.1016/j.eswa.2021.116014.
+\bibitem{chowdhury} H. Chowdhury \emph{et al.}, ``Broken stitch detection method for sewing operation using deep learning,'' in \emph{Proc. Int. Conf. Innovations in Science, Engineering and Technology (ICISET)}, 2024, doi: 10.1109/ICISET62123.2024.10939324.
+\bibitem{stitchingnet} W.-K. Jung, J. Kang, W. Kwon, and H. Kim, ``StitchingNet and deep transfer learning method for sewing stitch defect detection,'' \emph{J. Comput. Des. Eng.}, vol. 12, no. 4, pp. 140--154, 2025, doi: 10.1093/jcde/qwaf037.
+\bibitem{alexnet} A. Krizhevsky, I. Sutskever, and G. E. Hinton, ``ImageNet classification with deep convolutional neural networks,'' in \emph{Adv. Neural Inf. Process. Syst.}, 2012, pp. 1097--1105.
+\bibitem{yosinski} J. Yosinski, J. Clune, Y. Bengio, and H. Lipson, ``How transferable are features in deep neural networks?,'' in \emph{Adv. Neural Inf. Process. Syst.}, 2014, pp. 3320--3328.
+\bibitem{vgg} K. Simonyan and A. Zisserman, ``Very deep convolutional networks for large-scale image recognition,'' in \emph{Int. Conf. Learn. Representations (ICLR)}, 2015.
+\bibitem{augment} C. Shorten and T. M. Khoshgoftaar, ``A survey on image data augmentation for deep learning,'' \emph{J. Big Data}, vol. 6, art. 60, 2019, doi: 10.1186/s40537-019-0197-0.
+\bibitem{dropout} N. Srivastava, G. Hinton, A. Krizhevsky, I. Sutskever, and R. Salakhutdinov, ``Dropout: A simple way to prevent neural networks from overfitting,'' \emph{J. Mach. Learn. Res.}, vol. 15, pp. 1929--1958, 2014.
+\bibitem{batchnorm} S. Ioffe and C. Szegedy, ``Batch normalization: Accelerating deep network training by reducing internal covariate shift,'' in \emph{Proc. Int. Conf. Mach. Learn.}, 2015, pp. 448--456.
+\bibitem{adam} D. P. Kingma and J. Ba, ``Adam: A method for stochastic optimization,'' in \emph{Int. Conf. Learn. Representations (ICLR)}, 2015.
+\bibitem{patchcore2026} J. Kim, J.-H. Woo, W.-K. Jung, and H. Kim, ``An efficient anomaly detection method for the industrial sewing process using PatchCore and fine-tuned ResNet,'' \emph{Sci. Rep.}, 2026, doi: 10.1038/s41598-026-73203-5.
+\bibitem{stitchingnetseg2026} J. Park, W.-K. Jung, and H. Kim, ``StitchingNet-Seg: a semantic segmentation dataset of industrial sewing stitch defects,'' \emph{Sci. Data}, 2026, doi: 10.1038/s41597-026-08496-2.
+\bibitem{mvtec} P. Bergmann, M. Fauser, D. Sattlegger, and C. Steger, ``MVTec AD---A comprehensive real-world dataset for unsupervised anomaly detection,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.}, 2019, pp. 9592--9600.
+\end{thebibliography}
+\end{document}

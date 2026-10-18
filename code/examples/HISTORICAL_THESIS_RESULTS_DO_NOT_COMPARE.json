@@ -1,0 +1,28 @@
+{
+  "source": "Thesis Latest.pdf (September 2022); results not independently reproduced",
+  "dataset": {
+    "chapter_4_initial_image_records": 181,
+    "chapter_4_actual_records": 31,
+    "chapter_4_faulty_records": 150,
+    "chapter_4_augmented_count_claim": 20000,
+    "chapter_5_training_images_claim": 10000,
+    "chapter_5_loaded_images_claim": 9134,
+    "chapter_5_train_count_claim": 7862,
+    "chapter_5_test_count_claim": 1272
+  },
+  "filter_accuracy_train_val_percent": {
+    "bilateral": [99.25,79.50],
+    "gaussian": [93.12,80.00],
+    "salt_pepper_unspecified": [94.63,76.00]
+  },
+  "gaussian_conflicting_text_val_percent":84.0,
+  "activation_accuracy_percent": {
+    "relu":85.35,"softmax":82.94,"tanh":84.38,"sigmoid":82.63,"selu":84.47,"elu":81.74
+  },
+  "vgg_train_val_percent": {
+    "feature_shallow":[95.79,91.48],
+    "neural_network_ensemble":[96.63,93.0],
+    "final_vgg":[98.71,94.91]
+  },
+  "warning":"These are historical reported values, not achieved by the reconstructed code. Never mix across unknown data splits, or cite reconstructed output as thesis reproduction."
+}
