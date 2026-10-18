@@ -1,0 +1,47 @@
+name: Train frozen ImageNet MobileNetV3-Small baseline (NO EXTERNAL EVAL)
+on:
+  push:
+    paths:
+      - '.github/workflows/train-mobilenet.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  pretrained-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 95
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install PyTorch and evaluation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch torchvision numpy pandas scikit-learn Pillow
+          python -m pip install -e code/ --no-deps
+      - name: Download original source and PREVIOUSLY FROZEN candidate split
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/baseline
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/baseline
+          gh release download exploratory-cnn-candidate-family-v1 --repo '${{ github.repository }}' --pattern candidate_group_splits_portable.csv --dir /tmp/baseline
+          test "$(stat -c%s /tmp/baseline/dataset.zip)" -eq 2146784353
+      - name: Fit one PREDECLARED pretrained MobileNet frozen-feature baseline, train/val ONLY
+        run: |
+          python code/scripts/mobilenet_feature_baseline.py --dataset-zip /tmp/baseline/dataset.zip --portable-manifest /tmp/baseline/candidate_group_splits_portable.csv --out /tmp/baseline/fitted
+      - name: Publish trained weights plus reproducible experiment provenance as prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG='mobilenet-v3-small-frozen-feature-v1'
+          if ! gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+              --title 'ImageNet-pretrained MobileNet frozen features + balanced logistic head — PROVISIONAL' \
+              --notes 'Trained ONLY on original thesis ZIP train families, validation on frozen val families; original-photo lineage not verified. Internal/test and StitchingNet untouched. Model NOT publication-ready.' --prerelease --latest=false
+          fi
+          gh release upload "$TAG" /tmp/baseline/fitted/mobilenet_v3_small_frozen_features.pt /tmp/baseline/fitted/mobilenet_training_report.json --repo '${{ github.repository }}' --clobber
