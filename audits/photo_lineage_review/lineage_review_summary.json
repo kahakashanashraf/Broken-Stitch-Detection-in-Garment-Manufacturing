@@ -1,0 +1,141 @@
+{
+  "status": "AUTOMATED_RANKING_ONLY_NOT_PHOTO_LINEAGE_VERIFICATION",
+  "num_normal_candidate_groups": 31,
+  "num_faulty_candidate_groups": 151,
+  "num_candidate_pairs_compared": 4681,
+  "files": [
+    "candidate_cross_class_pairs.csv",
+    "lineage_contact_sheet_1.jpg",
+    "lineage_contact_sheet_2.jpg",
+    "lineage_contact_sheet_3.jpg",
+    "review_candidates_top5.json"
+  ],
+  "limitations": [
+    "Photoshop source photo identity is not proven by similarity scores",
+    "Image augmentations and backgrounds may inflate similarity",
+    "Only three representatives per candidate family used",
+    "Manual expert inspection + raw photo provenance needed to confirm mappings"
+  ],
+  "top_global_pairs": [
+    {
+      "normal_candidate_family": "actual_original_aq.png",
+      "faulty_candidate_family": "faulty_original_aq1.png",
+      "score_rank_only": 0.994824,
+      "hist": 0.9998,
+      "dct": 0.966,
+      "orb_good": 44,
+      "normal_filename": "dataset/train/actual/actual_original_AQ.png_bd6384ea-231e-4ec1-8b68-703a2f92f7dd.png",
+      "faulty_filename": "dataset/test/faulty/faulty_original_AQ1.png_024eddaf-4c73-44ec-90d1-5a66261db0e6.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_bb.png",
+      "faulty_candidate_family": "faulty_original_bb1.png",
+      "score_rank_only": 0.992953,
+      "hist": 0.9977,
+      "dct": 0.9579,
+      "orb_good": 33,
+      "normal_filename": "dataset/val/actual/actual_original_BB.png_fafeaebd-a74a-4833-94f1-8639a384250e.png",
+      "faulty_filename": "dataset/train/faulty/faulty_original_BB1.png_b3022c90-9e3d-44d8-a33e-56c2bcc1ddce.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_aq.png",
+      "faulty_candidate_family": "faulty_original_aq6.png",
+      "score_rank_only": 0.991642,
+      "hist": 0.9985,
+      "dct": 0.9476,
+      "orb_good": 30,
+      "normal_filename": "dataset/train/actual/actual_original_AQ.png_bd6384ea-231e-4ec1-8b68-703a2f92f7dd.png",
+      "faulty_filename": "dataset/val/faulty/faulty_original_AQ6.png_f88ac969-a402-4994-86b2-5fba64e6d7e1.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_aq.png",
+      "faulty_candidate_family": "faulty_original_aq5.png",
+      "score_rank_only": 0.981096,
+      "hist": 0.9974,
+      "dct": 0.8796,
+      "orb_good": 32,
+      "normal_filename": "dataset/train/actual/actual_original_AQ.png_bd6384ea-231e-4ec1-8b68-703a2f92f7dd.png",
+      "faulty_filename": "dataset/test/faulty/faulty_original_AQ5.png_126ea7e3-ecb2-4813-8c1e-9f82ac25e406.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_am.png",
+      "faulty_candidate_family": "faulty_original_am1.png",
+      "score_rank_only": 0.956661,
+      "hist": 0.9999,
+      "dct": 0.8125,
+      "orb_good": 24,
+      "normal_filename": "dataset/train/actual/actual_original_AM.png_b6c8f7a4-ed3c-48f0-b8ba-9a45ff6fa2a5.png",
+      "faulty_filename": "dataset/val/faulty/faulty_original_AM1.png_fe72c02d-59ad-469b-bef2-f96c247ff664.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_bc.png",
+      "faulty_candidate_family": "faulty_original_bc6.png",
+      "score_rank_only": 0.941092,
+      "hist": 0.9893,
+      "dct": 0.6301,
+      "orb_good": 25,
+      "normal_filename": "dataset/test/actual/actual_original_BC.png_11bc7fc2-d0f7-44b1-acbd-d0ff40ea7cb5.png",
+      "faulty_filename": "dataset/train/faulty/faulty_original_BC6.png_34415502-44f5-44d4-9592-0e99d4c706f1.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_aa.png",
+      "faulty_candidate_family": "faulty_original_aa1.png",
+      "score_rank_only": 0.923359,
+      "hist": 0.9989,
+      "dct": 0.4914,
+      "orb_good": 30,
+      "normal_filename": "dataset/test/actual/actual_original_AA.png_0e12131c-742b-4db2-b497-e6a4e75989ad.png",
+      "faulty_filename": "dataset/test/faulty/faulty_original_AA1.png_17ab3cbe-5cdd-4a52-9e1c-84f6f10293b1.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_ah.png",
+      "faulty_candidate_family": "faulty_original_ah3.png",
+      "score_rank_only": 0.878641,
+      "hist": 0.9993,
+      "dct": 0.8004,
+      "orb_good": 19,
+      "normal_filename": "dataset/train/actual/actual_original_AH.png_a085ca59-e9ef-46fd-b3e3-63eb6f121135.png",
+      "faulty_filename": "dataset/test/faulty/faulty_original_AH3.png_1b000486-ae6e-489b-a050-ada2eb2ee0be.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_ah.png",
+      "faulty_candidate_family": "faulty_original_ah1.png",
+      "score_rank_only": 0.857917,
+      "hist": 0.9999,
+      "dct": 0.8636,
+      "orb_good": 17,
+      "normal_filename": "dataset/train/actual/actual_original_AH.png_a085ca59-e9ef-46fd-b3e3-63eb6f121135.png",
+      "faulty_filename": "dataset/val/faulty/faulty_original_AH1.png_f79b19a6-c39a-4e14-91b1-133d88a7865f.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_bb.png",
+      "faulty_candidate_family": "faulty_original_bb2.png",
+      "score_rank_only": 0.839868,
+      "hist": 0.9995,
+      "dct": 0.7442,
+      "orb_good": 17,
+      "normal_filename": "dataset/val/actual/actual_original_BB.png_fafeaebd-a74a-4833-94f1-8639a384250e.png",
+      "faulty_filename": "dataset/val/faulty/faulty_original_BB2.png_e0f0b76c-edd2-4471-9c15-577b7e942e50.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_ah.png",
+      "faulty_candidate_family": "faulty_original_ah2.png",
+      "score_rank_only": 0.835198,
+      "hist": 0.9998,
+      "dct": 0.611,
+      "orb_good": 18,
+      "normal_filename": "dataset/val/actual/actual_original_AH.png_fcd64407-e57a-4114-b609-5bc92903fcb1.png",
+      "faulty_filename": "dataset/val/faulty/faulty_original_AH2.png_a8e3ee1f-8662-4452-8846-4a4c1d05f107.png"
+    },
+    {
+      "normal_candidate_family": "actual_original_am.png",
+      "faulty_candidate_family": "faulty_original_am2.png",
+      "score_rank_only": 0.825383,
+      "hist": 0.9946,
+      "dct": 0.8607,
+      "orb_good": 15,
+      "normal_filename": "dataset/test/actual/actual_original_AM.png_0fd62d55-00e2-4ef2-b661-59459ec56138.png",
+      "faulty_filename": "dataset/val/faulty/faulty_original_AM2.png_f3612a17-cfc6-473c-aaf6-54385b8e9d2a.png"
+    }
+  ]
+}
