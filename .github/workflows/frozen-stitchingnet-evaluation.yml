@@ -1,0 +1,59 @@
+name: ONE-SHOT frozen external StitchingNet evaluation (no training)
+on:
+  push:
+    paths:
+      - '.github/workflows/frozen-stitchingnet-evaluation.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  zero-shot-external:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install READ-ONLY model-evaluation dependencies
+        run: |
+          pip install torch torchvision numpy scikit-learn pandas pillow opencv-python-headless
+          pip install -e code/ --no-deps
+      - name: Download BOTH already-frozen model releases and untouched data archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/bs_external
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/bs_external
+          gh release download exploratory-cnn-candidate-family-v1 --repo '${{ github.repository }}' \
+             --pattern best.pt --pattern checkpoint_provenance.json --pattern candidate_group_splits_portable.csv --dir /tmp/bs_external
+          gh release download mobilenet-v3-small-frozen-feature-v1 --repo '${{ github.repository }}' \
+             --pattern mobilenet_v3_small_frozen_features.pt --pattern mobilenet_training_report.json --dir /tmp/bs_external
+          test "$(stat -c%s /tmp/bs_external/dataset.zip)" -eq 2146784353
+          curl -L --retry 3 --retry-delay 5 --fail 'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' -o /tmp/bs_external/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/bs_external/StitchingNet.zip' | md5sum -c -
+      - name: Frozen one-shot transfer evaluation — NEVER fit/tune on StitchingNet
+        run: |
+          python code/scripts/frozen_stitchingnet_eval.py \
+             --external-zip /tmp/bs_external/StitchingNet.zip \
+             --internal-zip /tmp/bs_external/dataset.zip \
+             --mobilenet-weights /tmp/bs_external/mobilenet_v3_small_frozen_features.pt \
+             --mobilenet-report /tmp/bs_external/mobilenet_training_report.json \
+             --cnn-weights /tmp/bs_external/best.pt \
+             --cnn-provenance /tmp/bs_external/checkpoint_provenance.json \
+             --portable-manifest /tmp/bs_external/candidate_group_splits_portable.csv \
+             --out /tmp/bs_external/frozen_external_results.json
+      - name: Publish one-shot evaluation with clear provisional caveats
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG='stitchingnet-frozen-first-eval-v1'
+          if ! gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+              --title 'First untouched StitchingNet external test — frozen CNN and MobileNet' \
+              --notes 'One-shot test normal (00) vs broken (02), no model training, tuning or threshold selection on external data. Results descriptive only until actual source-photo linkage is verified.' --prerelease --latest=false
+          fi
+          gh release upload "$TAG" /tmp/bs_external/frozen_external_results.json --repo '${{ github.repository }}' --clobber
