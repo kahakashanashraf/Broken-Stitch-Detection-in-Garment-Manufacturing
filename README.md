@@ -118,3 +118,8 @@ The new **development-only 5-fold split-protocol diagnostic** used 6,278 images 
 The original augmented-image split leaked all 182 edit families. Version 2 repartitions **7,364 readable images by 31 inferred photographed-source roots** (train 5,019 / val 1,259 / test 1,086, with 21/5/5 candidate roots) and discards one corrupt original. Verified **0 cross-split candidate parents and 0 cross-split exact-byte duplicates**. The source-photo mapping is still *inferred*, and validation/test still consist of historical augmented images; we have **not** recovered true unedited raw photos. Existing held-out scores are already inspected, and no new accuracy was generated just by cleaning ZIP folders.
 
 Please use v2 instead of the original leaky train/val/test directories for reproducible future work.
+
+
+## New model experiment on cleaned dataset v2
+
+An **ImageNet-pretrained EfficientNet-B0 frozen image encoder** with a **newly supervised-trained, inferred-photo-parent/class-balanced logistic head** is configured in [`code/scripts/train_clean_effnet.py`](code/scripts/train_clean_effnet.py). It uses only clean v2 `train.zip` (5,019) and `val.zip` (1,259), 21/5 inferred photo parents, verifies archive/member checksums and **does not download test.zip or StitchingNet**. The older inspected test and external metrics MUST NOT be transferred to this model. Inference code: [`code/scripts/predict_clean_effnet.py`](code/scripts/predict_clean_effnet.py). See the dedicated GitHub Actions workflow; when successful, the separately versioned training-report and authentic checkpoint will be made available as a GitHub Release. The dataset is still composed of historical augmented Photoshop-derived images, not independently verified raw photos.

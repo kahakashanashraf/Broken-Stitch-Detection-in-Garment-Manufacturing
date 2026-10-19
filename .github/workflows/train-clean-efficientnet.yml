@@ -1,0 +1,73 @@
+name: Train EfficientNet-B0 on leakage-controlled v2 train-only (validation only)
+on:
+  push:
+    paths:
+      - '.github/workflows/train-clean-efficientnet.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+      OPENBLAS_NUM_THREADS: '4'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install model dependencies
+        run: |
+          python -m pip install --disable-pip-version-check torch torchvision scikit-learn Pillow numpy
+          python -m pip install -e code/ --no-deps
+      - name: Protect this run against accidental retraining/overwrite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view clean-v2-efficientnet-b0-parent-balanced-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: model release already exists; do not rerun same declared experiment.' >&2
+            exit 1
+          fi
+      - name: Download ONLY cleaned training and validation archives and provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/bs-effnet/input /tmp/bs-effnet/model
+          gh release download leakage-controlled-dataset-v2-inferred-31-parents --repo '${{ github.repository }}' \
+            --pattern train.zip --pattern val.zip --pattern clean_manifest.csv --pattern quality_report.json \
+            --dir /tmp/bs-effnet/input
+          echo '9ffecc2e2c25cdf948e4b6483f8d6cc3109a045bdc18b653005557d07b23bb69  /tmp/bs-effnet/input/train.zip' | sha256sum -c -
+          echo '9f7df5beffc92d7247cc8b96999233ca1337f3e4e6fe2042d57d08de89c4aae6  /tmp/bs-effnet/input/val.zip' | sha256sum -c -
+          test ! -e /tmp/bs-effnet/input/test.zip
+      - name: Fit ImageNet EfficientNet frozen features plus train-only parent-balanced supervised head
+        shell: bash
+        run: |
+          set -euo pipefail
+          python code/scripts/train_clean_effnet.py \
+            --train-zip /tmp/bs-effnet/input/train.zip \
+            --val-zip /tmp/bs-effnet/input/val.zip \
+            --manifest /tmp/bs-effnet/input/clean_manifest.csv \
+            --quality-report /tmp/bs-effnet/input/quality_report.json \
+            --out /tmp/bs-effnet/model
+      - name: Publish REAL trained model, reproducible validation predictions and model card
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=clean-v2-efficientnet-b0-parent-balanced-v1
+          gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+            --title 'Trained ImageNet EfficientNet-B0 + group-balanced head on cleaned v2 (validation only)' \
+            --notes 'Actual fitting on cleaned v2 train 5019 and validation 1259, original inferred parent groups 21 train / 5 val / 5 prior-used test. No test.zip download, no StitchingNet evaluation. The holdout has been seen in earlier experiments; do not claim a new untouched independent test. Source photograph provenance and licensing not independently verified.' \
+            --prerelease --latest=false
+          gh release upload "$TAG" /tmp/bs-effnet/model/efficientnet_b0_clean_v2.pt \
+            /tmp/bs-effnet/model/training_report.json \
+            /tmp/bs-effnet/model/validation_predictions.csv \
+            --repo '${{ github.repository }}'
