@@ -1,0 +1,57 @@
+name: One-shot 31-inferred-photo-parent MobileNet internal holdout
+on:
+  push:
+    paths:
+      - '.github/workflows/one-shot-photo-parent-holdout.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  frozen-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test-only inference dependencies
+        run: |
+          pip install torch torchvision scikit-learn Pillow numpy pandas opencv-python-headless
+          pip install -e code/ --no-deps
+      - name: Fetch immutable source archive and PREVIOUSLY TRAINED checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/holdout/data /tmp/holdout/model
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --pattern dataset_release_metadata.json --dir /tmp/holdout/data
+          gh release download mobilenet-photo-parent-inferred-v1 --repo '${{ github.repository }}' --pattern mobilenet_v3_small_photo_parent_inferred.pt --pattern photo_parent_mobilenet_report.json --dir /tmp/holdout/model
+          echo '02fa682d0648aa2521d50bb5f402ba4c8452ee71fd079333d135af9178435253  /tmp/holdout/model/mobilenet_v3_small_photo_parent_inferred.pt' | sha256sum -c -
+      - name: Evaluate FROZEN photo-parent holdout ONCE; never fit or change threshold
+        run: |
+          python code/scripts/one_shot_photo_parent_holdout.py \
+            --archive /tmp/holdout/data/dataset.zip \
+            --archive-metadata /tmp/holdout/data/dataset_release_metadata.json \
+            --weights /tmp/holdout/model/mobilenet_v3_small_photo_parent_inferred.pt \
+            --training-report /tmp/holdout/model/photo_parent_mobilenet_report.json \
+            --manifest audits/photographed_source_inference/inferred_photo_parent_split.csv \
+            --out /tmp/holdout/frozen_internal_holdout_results.json
+      - name: Publish one-time results with full provisional caveat
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='frozen-photo-parent-holdout-first-v1'
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: release already exists; protect one-shot test from repetition' >&2
+            exit 1
+          fi
+          gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+            --title 'First frozen 31-inferred-photo-parent internal test — NOT verified real-photo independent' \
+            --notes 'Only first frozen internal holdout of already trained checkpoint. Five inferred photo parent roots; underlying Photoshop edit/source evidence not human verified. No train/tune/threshold selection. Test is now inspected, do not claim untouched after tuning.' \
+            --prerelease --latest=false
+          gh release upload "$TAG" /tmp/holdout/frozen_internal_holdout_results.json --repo '${{ github.repository }}'
