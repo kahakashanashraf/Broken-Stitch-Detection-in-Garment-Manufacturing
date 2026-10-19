@@ -1,0 +1,45 @@
+name: Build IEEE evidence paper v4 with controlled split sensitivity
+on:
+  push:
+    paths:
+      - 'paper/evidence_audit_v4.tex'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LaTeX and PDF audit software
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-publishers texlive-fonts-recommended poppler-utils
+      - name: Compile and validate FIVE-PAGE IEEE research manuscript
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd paper
+          test -f figures/page33_image1.jpeg
+          test -f figures/page33_image2.jpeg
+          pdflatex -halt-on-error -interaction=nonstopmode evidence_audit_v4.tex > /tmp/v4tex1.log
+          pdflatex -halt-on-error -interaction=nonstopmode evidence_audit_v4.tex > /tmp/v4tex2.log
+          mv evidence_audit_v4.pdf ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf
+          test "$(pdfinfo ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf | awk '/Pages:/ {print $2}')" -le 6
+          test "$(stat -c%s ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf)" -lt 3000000
+          pdfinfo ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf | grep 'Page size:.*A4'
+          if pdffonts ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf | grep -q 'Type 3'; then echo 'STOP: Type-3 font' >&2; exit 1; fi
+          if pdftotext ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf - | grep -Eqi 'Johora Bibi Juhi|Kahakashan Ashraf|Dipra Das'; then echo 'STOP: author identity' >&2; exit 1; fi
+          if grep -E 'LaTeX Warning:.*undefined|Citation .* undefined|Reference .* undefined' /tmp/v4tex2.log; then exit 1; fi
+          sha256sum ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf > EVIDENCE_V4_PDF_SHA256.txt
+          pdfinfo ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf | grep -E 'Pages:|File size:|Page size:'
+      - name: Publish verified PDF without changing previous manuscripts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add paper/ICEEICT2027_BrokenStitch_Evidence_Audit_v4_Anonymous.pdf paper/EVIDENCE_V4_PDF_SHA256.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish v4 controlled-split evidence paper (anonymous, 5 pages)'
+            git push
+          fi
