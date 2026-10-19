@@ -109,3 +109,12 @@ This manuscript replaces the unexecuted-protocol-only emphasis with **actual mea
 The new **development-only 5-fold split-protocol diagnostic** used 6,278 images from 26 inferred photographed-source parents, **without accessing** the previously inspected five-parent internal holdout or StitchingNet. Identical frozen MobileNetV3-Small features and logistic classifier produced image-random pooled OOF macro-F1 **0.8714** versus inferred-parent-grouped **0.6879**; observed **18.35 percentage-point difference**. In every random fold, all 26 inferred parents cross fold-training/validation; in every grouped fold, zero cross. This is an **exploratory observational protocol sensitivity** finding, not a causal estimate of historical 94.91% overoptimism or verified real-photo independence.
 
 [Full CV JSON and GitHub Action](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/development-split-sensitivity-v1). The previous frozen holdout, external StitchingNet and all raw parentage caveats remain unchanged. **This paper remains NOT submission-cleared**, especially due to unverified original image ownership/provenance and ICEEICT's strict declared LLM-use rule.
+
+
+## Leakage-controlled dataset v2 — now published
+
+**[Download physically reorganized train/validation/test ZIPs](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/leakage-controlled-dataset-v2-inferred-31-parents)** · [Data cleaning report](docs/DATASET_V2_LEAKAGE_CONTROL_2026_10_19.md)
+
+The original augmented-image split leaked all 182 edit families. Version 2 repartitions **7,364 readable images by 31 inferred photographed-source roots** (train 5,019 / val 1,259 / test 1,086, with 21/5/5 candidate roots) and discards one corrupt original. Verified **0 cross-split candidate parents and 0 cross-split exact-byte duplicates**. The source-photo mapping is still *inferred*, and validation/test still consist of historical augmented images; we have **not** recovered true unedited raw photos. Existing held-out scores are already inspected, and no new accuracy was generated just by cleaning ZIP folders.
+
+Please use v2 instead of the original leaky train/val/test directories for reproducible future work.
