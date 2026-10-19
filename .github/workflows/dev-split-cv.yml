@@ -1,0 +1,53 @@
+name: Development-only 5-fold random versus parent grouped split diagnostic
+on:
+  push:
+    paths:
+      - '.github/workflows/dev-split-cv.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Stop if archived result already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view development-split-sensitivity-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: diagnostic is frozen and previously completed' >&2
+            exit 1
+          fi
+      - name: Install computation dependencies
+        run: |
+          pip install torch torchvision scikit-learn Pillow numpy pandas
+          pip install -e code/ --no-deps
+      - name: Download original data archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/bsdev
+          gh release download original-thesis-dataset-v1 --repo '${{ github.repository }}' --pattern dataset.zip --dir /tmp/bsdev
+          test "$(stat -c%s /tmp/bsdev/dataset.zip)" -eq 2146784353
+      - name: Run fixed exploratory 5-fold diagnostic ONLY on original dev photo-parent candidates
+        run: |
+          python code/scripts/development_cv_split_sensitivity.py \
+            --zip /tmp/bsdev/dataset.zip \
+            --manifest audits/photographed_source_inference/inferred_photo_parent_split.csv \
+            --out /tmp/bsdev/development_cv_split_sensitivity.json
+      - name: Publish report as exploratory prerelease (no holdout score claims)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create development-split-sensitivity-v1 --repo '${{ github.repository }}' --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Exploratory development-only 5-fold random vs inferred-parent split diagnostic' \
+            --notes 'Only 26 development photo-parent candidates. Image-level random folds are deliberately contaminated. Same fixed pretrained MobileNet features/classifier; no heldout internal test or StitchingNet. CV results exploratory, not causal proof nor independent-source performance.' \
+            /tmp/bsdev/development_cv_split_sensitivity.json
