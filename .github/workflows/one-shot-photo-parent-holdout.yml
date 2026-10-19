@@ -1,8 +1,5 @@
 name: One-shot 31-inferred-photo-parent MobileNet internal holdout
 on:
-  push:
-    paths:
-      - '.github/workflows/one-shot-photo-parent-holdout.yml'
   workflow_dispatch:
 permissions:
   contents: write
@@ -18,6 +15,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: HARD STOP when one-shot evaluation already exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view frozen-photo-parent-holdout-first-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'One-shot holdout already inspected; disabling repeated evaluation.' >&2
+            exit 1
+          fi
       - name: Install test-only inference dependencies
         run: |
           pip install torch torchvision scikit-learn Pillow numpy pandas opencv-python-headless

@@ -59,3 +59,9 @@ The StitchingNet benchmark has now been examined. Do **not** reuse it for post-h
 Validation ONLY: accuracy 0.648133, balanced accuracy **0.672504**, macro-F1 **0.641908**, normal recall **0.750577**, faulty recall **0.594431**, AUROC **0.708058**; matrix [[325,108],[335,491]]. This is not directly comparable with older 182-family validation or StitchingNet external scores due to different partitions, and true underlying photographs are not independently confirmed.
 
 No further StitchingNet evaluation was made. Human inspection and separate unseen-domain test remain required.
+
+## 19 October frozen holdout (not photographed-source independent)
+
+[Single successful holdout run](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/runs/39264164430) / [result JSON](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/frozen-photo-parent-holdout-first-v1): 1,086 photo-parent-inferred held-out synthetic/augmented images; only 5 parent roots; MobileNet 0.8020 accuracy, 0.8174 balanced accuracy, 0.7995 macro-F1, 0.9135 ROC-AUC. Faulty recall 497/664 = 0.7485. A 31-photo-parent mapping remains inference only and original image rights/source verification missing. Full limitations: [19 Oct report](ONE_SHOT_HOLDOUT_2026_10_19.md). New genuinely independent real normal/broken sewing-stitch data [not located](INDEPENDENT_EXTERNAL_DATASET_SCREEN_2026_10_19.md).
+
+The previously published StitchingNet 0.635 macro-F1 belongs to the older 182-family model; it must NOT be assigned to the newer photo-parent model. The old StitchingNet and **now the 5-parent holdout** are both inspected, and cannot be called untouched after subsequent selection/tuning. No new external benchmark was run today.

@@ -10,7 +10,7 @@ def test_frozen_holdout_script_has_no_model_training():
     assert 'LogisticRegression(' not in t and '.fit(' not in t
 
 def test_frozen_holdout_rejects_changed_threshold():
-    p=Path(__file__).resolve().parents[2]/'scripts'/'one_shot_photo_parent_holdout.py'
+    p=Path(__file__).resolve().parents[1]/'scripts'/'one_shot_photo_parent_holdout.py'
     t=p.read_text()
     assert "ck['fixed_threshold']!=0.5" in t
     assert "'test'" in t and "'train'" in t
