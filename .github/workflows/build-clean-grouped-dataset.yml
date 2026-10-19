@@ -1,0 +1,52 @@
+name: Materialize leakage-controlled candidate-photo grouped dataset v2
+on:
+  push:
+    paths:
+      - '.github/workflows/build-clean-grouped-dataset.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    env:
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download and check original archive identity
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/bs-clean/input /tmp/bs-clean/output
+          gh release download original-thesis-dataset-v1 --repo "\${{ github.repository }}" --pattern dataset.zip --dir /tmp/bs-clean/input
+          echo 'e7aed1355a712c14bbe6560fefbb3dfab546a38970f836d129f5721e0b046979  /tmp/bs-clean/input/dataset.zip' | sha256sum -c -
+      - name: Install PNG/JPEG verification
+        run: python -m pip install Pillow
+      - name: Build corrected train val test ZIPs (group integrity fail-closed)
+        run: |
+          python code/scripts/build_clean_grouped_dataset.py \
+            --zip /tmp/bs-clean/input/dataset.zip \
+            --manifest audits/photographed_source_inference/inferred_photo_parent_split.csv \
+            --out /tmp/bs-clean/output
+      - name: Publish audited archives, manifest and report, never overwrite
+        env:
+          GH_TOKEN: \${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='leakage-controlled-dataset-v2-inferred-31-parents'
+          if gh release view "$TAG" --repo "\${{ github.repository }}" >/dev/null 2>&1; then
+            echo 'STOP: v2 already exists. No silent replacing dataset content.' >&2
+            exit 1
+          fi
+          gh release create "$TAG" --repo "\${{ github.repository }}" --target "\${{ github.sha }}" \
+            --title 'Original stitch images reorganized into 31 inferred photo-root-grouped train/val/test archives (NOT verified)' \
+            --notes 'Filename-inferred 31 parent roots; zero cross-split parent overlap; 7364 readable images, one quarantined. All historical augmented images preserved in their own split, not unaugmented original-photo data. Old split invalid. Validation/test were already inspected; no new independent performance claim. Provenance & licensing unverified.' --prerelease --latest=false
+          gh release upload "$TAG" /tmp/bs-clean/output/train.zip /tmp/bs-clean/output/val.zip /tmp/bs-clean/output/test.zip \
+              /tmp/bs-clean/output/clean_manifest.csv /tmp/bs-clean/output/evaluation_representative_candidates.csv \
+              /tmp/bs-clean/output/quality_report.json /tmp/bs-clean/output/README.txt \
+              --repo "\${{ github.repository }}"
