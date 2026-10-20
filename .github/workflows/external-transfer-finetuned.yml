@@ -1,0 +1,92 @@
+name: Descriptive cross-domain StitchingNet evaluation of six frozen fine-tuned models
+on:
+  push:
+    paths:
+      - '.github/workflows/external-transfer-finetuned.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: stitch-net-descriptive-finetuned-v1
+  cancel-in-progress: false
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        model: [class_only, parent_class, parent_class_aug, mobilenetv3, densenet121, vgg16]
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Protect frozen post-hoc evaluation release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="stitchingnet-descriptive-finetuned-${{ matrix.model }}-v1"
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo "Release $TAG exists. This experiment is immutable." >&2
+            exit 1
+          fi
+      - name: Install read-only image inference dependencies
+        run: |
+          python -m pip install torch torchvision Pillow numpy scikit-learn
+          python -m pip install -e code/ --no-deps
+      - name: Download frozen checkpoint and official external StitchingNet archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/external-transfer/input /tmp/external-transfer/output
+          MODEL='${{ matrix.model }}'
+          case "$MODEL" in
+            class_only|parent_class|parent_class_aug)
+              TAG="source-balanced-ablation-${MODEL}-v1"
+              FILE="mobilenetv3_${MODEL}_refit.pt"
+              ;;
+            mobilenetv3|densenet121|vgg16)
+              TAG="fine-tuned-groupedcv-${MODEL}-v1"
+              FILE="${MODEL}_fine_tuned_dev_v1.pt"
+              ;;
+            *) echo 'Unexpected model'; exit 1;;
+          esac
+          gh release download "$TAG" --repo '${{ github.repository }}' --pattern "$FILE" --dir /tmp/external-transfer/input
+          mv "/tmp/external-transfer/input/$FILE" /tmp/external-transfer/input/model.pt
+          curl -fL --retry 4 --retry-delay 6 --connect-timeout 30 \
+            'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' \
+            -o /tmp/external-transfer/input/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/external-transfer/input/StitchingNet.zip' | md5sum -c -
+      - name: EVALUATE frozen model only, never train on external images
+        run: |
+          set -euo pipefail
+          python code/scripts/evaluate_stitchingnet_finetuned.py \
+            --model '${{ matrix.model }}' \
+            --weights /tmp/external-transfer/input/model.pt \
+            --external-zip /tmp/external-transfer/input/StitchingNet.zip \
+            --out /tmp/external-transfer/output
+          test -s /tmp/external-transfer/output/external_metrics.json
+          test -s /tmp/external-transfer/output/external_predictions.csv
+      - name: Publish non-blind/descriptive evaluation result and predictions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="stitchingnet-descriptive-finetuned-${{ matrix.model }}-v1"
+          gh release create "$TAG" --repo '${{ github.repository }}' \
+            --target '${{ github.sha }}' --prerelease --latest=false \
+            --title "${{ matrix.model }} frozen cross-domain transfer to StitchingNet (NOT a blind new benchmark)" \
+            --notes '3,637 original StitchingNet sewing images; 2,436 normal and 1,201 broken. Binary label mapping 00/02, fixed 0.5 threshold, exact official source archive MD5. No fitting, selection or threshold tuning here. StitchingNet was previously inspected with a different model; these diagnostic external results are NON-BLIND and NOT an untouched test or deployment claim.'
+          gh release upload "$TAG" \
+            /tmp/external-transfer/output/external_metrics.json \
+            /tmp/external-transfer/output/external_predictions.csv \
+            --repo '${{ github.repository }}'
