@@ -1,0 +1,81 @@
+name: Supervised StitchingNet adaptation with held-out fabric groups and Grad-CAM XAI
+on:
+  push:
+    paths:
+      - '.github/workflows/stitchingnet-fabric-adaptation.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: stitchingnet-fabric-adapt-v1
+  cancel-in-progress: false
+jobs:
+  fabric_adaptation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        arm: [imagenet, synthetic]
+        fold: ['0','1','2','3','4']
+    env:
+      PYTHONUNBUFFERED: '1'
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+      TORCH_HOME: /tmp/torch-pretrained
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Protect immutable release and distinguish in-domain vs cross-domain evaluations
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="stitchingnet-fabric-heldout-${{ matrix.arm }}-f${{ matrix.fold }}-v1"
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: release already exists; do not retrain or silently overwrite' >&2
+            exit 1
+          fi
+      - name: Install CPU model dependencies
+        run: |
+          python -m pip install torch torchvision scikit-learn numpy Pillow
+          python -m pip install -e code --no-deps
+      - name: Download exact model and official StitchingNet data; check independent source identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/stitchfab/input /tmp/stitchfab/output
+          gh release download enhanced-mobilenet-224e12-v1-refit \
+            --repo '${{ github.repository }}' --pattern 'mobilenet_v3_224px_12epoch_dev_refit.pt' --dir /tmp/stitchfab/input
+          echo '0c1eaf25ad7daea5370fd16492b811c0b90408adb3a561f47d3a5c5c48a83a81  /tmp/stitchfab/input/mobilenet_v3_224px_12epoch_dev_refit.pt' | sha256sum -c -
+          curl --fail -L --retry 5 --retry-all-errors --retry-delay 5 \
+            'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' \
+            -o /tmp/stitchfab/input/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/stitchfab/input/StitchingNet.zip' | md5sum -c -
+      - name: Supervised adaptation on training fabrics, fixed held-out-fabric evaluation and real Grad-CAM
+        run: |
+          python code/scripts/fabric_group_adaptation.py \
+            --stitchingnet-zip /tmp/stitchfab/input/StitchingNet.zip \
+            --synthetic-weights /tmp/stitchfab/input/mobilenet_v3_224px_12epoch_dev_refit.pt \
+            --arm '${{ matrix.arm }}' --fold '${{ matrix.fold }}' \
+            --epochs 6 --batch-size 16 --out /tmp/stitchfab/output
+      - name: Publish true OOF predictions, metrics and XAI maps as an exploratory prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="stitchingnet-fabric-heldout-${{ matrix.arm }}-f${{ matrix.fold }}-v1"
+          test -s /tmp/stitchfab/output/fabric_heldout_oof_predictions.csv
+          test -s /tmp/stitchfab/output/fabric_heldout_report.json
+          gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+            --prerelease --latest=false \
+            --title "Exploratory supervised StitchingNet adaptation ${{ matrix.arm }} holdout fabric fold ${{ matrix.fold }}" \
+            --notes 'Model TRAINED on labeled StitchingNet training fabrics (other fabric IDs) and scored on entirely held-out fabric IDs. Source data inspected in past project experiments. NOT an untouched test or thesis-only zero-shot transfer. Six epochs, 224px, normal vs broken, ImageNet initialization compared with thesis-pretrained initialization. Grad-CAM grayscale heatmaps reflect gradients of broken logit; no original images republished, not validated defect localization. StitchingNet license CC BY-NC 4.0, source https://github.com/hyungjungkim/StitchingNet.'
+          gh release upload "$TAG" /tmp/stitchfab/output/fabric_heldout_oof_predictions.csv \
+             /tmp/stitchfab/output/fabric_heldout_report.json \
+             /tmp/stitchfab/output/*_gradcam.png \
+             --repo '${{ github.repository }}'
