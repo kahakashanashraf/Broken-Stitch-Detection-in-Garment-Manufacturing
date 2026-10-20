@@ -1,0 +1,50 @@
+name: Publish frozen controlled source-aware ablation report snapshot
+on:
+  push:
+    paths:
+      - '.github/workflows/publish-source-ablation-report.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get immutable completed paired comparison (no datasets downloaded)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ablation-comparison
+          gh release download source-balanced-ablation-comparison-v1 \
+            --repo '${{ github.repository }}' \
+            --pattern controlled_source_aware_ablation.json \
+            --pattern CONTROLLED_ABLATION_RESULTS.md \
+            --dir /tmp/ablation-comparison
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          d=json.loads(Path('/tmp/ablation-comparison/controlled_source_aware_ablation.json').read_text())
+          assert d['status']=='DESCRIPTIVE_POST_HOC_DEVELOPMENT_ONLY_ABLATION_NO_INDEPENDENT_TEST'
+          assert d['n_dev_images']==6278 and d['parent_candidates']==26 and d['bootstrap_draws']==2000
+          assert d['not_a_new_independent_test'] is True and d['test_and_stitchingnet_opened'] is False
+          expected={'class_only':0.7434738926709479,'parent_class':0.7434320509065339,'parent_class_aug':0.7378105272953883}
+          for k,v in expected.items():assert abs(d['model_scores'][k]['macro_f1']-v)<1e-9
+          for key,val in d['paired_effects'].items():
+              print(key,'delta',val['pooled_macro_f1_delta'],
+                    'parent_bootstrap_95pct',val['paired_parent_bootstrap_descriptive_95pct'])
+          PY
+      - name: Commit frozen exact study results into reproducibility docs
+        run: |
+          set -euo pipefail
+          cp /tmp/ablation-comparison/controlled_source_aware_ablation.json docs/source_aware_ablation_results_v1.json
+          cp /tmp/ablation-comparison/CONTROLLED_ABLATION_RESULTS.md docs/SOURCE_AWARE_ABLATION_RESULTS_2026_10_20.md
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/source_aware_ablation_results_v1.json docs/SOURCE_AWARE_ABLATION_RESULTS_2026_10_20.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'Archive exact paired 26-parent loss-weighting ablation metrics and descriptive intervals'
+            git push
+          fi
