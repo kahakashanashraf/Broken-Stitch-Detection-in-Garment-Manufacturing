@@ -1,0 +1,58 @@
+name: Compare completed genuinely fine-tuned models with paired parent-cluster uncertainty
+on:
+  workflow_run:
+    workflows:
+      - 'Actual fine-tuning comparison on clean v2 inferred-parent grouped 5-fold CV'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  compare:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install metric dependencies
+        run: python -m pip install numpy scikit-learn
+      - name: Download immutable five-fold OOF predictions from all three distinct releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='fine-tuned-groupedcv-comparison-v1'
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: comparison already archived; do not overwrite' >&2; exit 1
+          fi
+          for arch in mobilenetv3 densenet121 vgg16; do
+            mkdir -p "/tmp/bs-compare/$arch"
+            gh release download "fine-tuned-groupedcv-${arch}-v1" \
+              --repo '${{ github.repository }}' --pattern oof_predictions.csv --pattern training_cv_report.json \
+              --dir "/tmp/bs-compare/$arch"
+            test -s "/tmp/bs-compare/$arch/oof_predictions.csv"
+          done
+      - name: Compare same folds and estimate paired 26-photo cluster uncertainty
+        run: |
+          python code/scripts/compare_grouped_finetuning.py \
+            --mobilenetv3 /tmp/bs-compare/mobilenetv3/oof_predictions.csv \
+            --densenet121 /tmp/bs-compare/densenet121/oof_predictions.csv \
+            --vgg16 /tmp/bs-compare/vgg16/oof_predictions.csv \
+            --out /tmp/bs-compare/results
+      - name: Publish full comparison without touching inspected test data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create fine-tuned-groupedcv-comparison-v1 \
+            --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+            --prerelease --latest=false \
+            --title 'Paired 26-inferred-parent grouped-CV comparison, genuine fine-tuned convolutional models' \
+            --notes 'This compares previously published development-only out-of-fold predictions from the same five grouped folds. Bootstrap resamples 26 inferred source roots, not independent images. Post-hoc model selection; no prior inspected holdout or StitchingNet used. Not an independent external generalization assessment.'
+          gh release upload fine-tuned-groupedcv-comparison-v1 \
+            /tmp/bs-compare/results/architecture_groupedcv_comparison.json \
+            /tmp/bs-compare/results/GROUPED_CV_COMPARISON.md \
+            --repo '${{ github.repository }}'
