@@ -4,6 +4,7 @@ import sys
 import ast
 import numpy as np
 import torch
+from PIL import Image
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'scripts'))
@@ -18,7 +19,7 @@ def test_predeclared_training_recipe_and_resolution():
     assert PER_CLASS==800 and BATCH_SIZE==12 and SEED==old.SEED
     set_preprocess()
     assert old.TRAIN_TF is old.VAL_TF
-    assert old.TRAIN_TF(torch.zeros(3,400,400)).shape==(3,SIZE,SIZE)
+    assert old.TRAIN_TF(Image.new('RGB',(400,400))).shape==(3,SIZE,SIZE)
 
 
 def test_exact_class_only_sample_ids_preserved():
