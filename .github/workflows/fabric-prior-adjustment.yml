@@ -1,0 +1,73 @@
+name: Exploratory train-fabric class-prior operating-point analysis (not model training)
+on:
+  workflow_run:
+    workflows:
+      - 'Compare supervised heldout-fabric StitchingNet adaptation and prior zero-shot model'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  operating_point:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install numpy scikit-learn
+      - name: Read immutable fold predictions and training-only class counts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view stitchingnet-train-prior-adjustment-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: immutable exploratory adjustment already available' >&2;exit 1
+          fi
+          for arm in imagenet synthetic; do
+            for fold in 0 1 2 3 4; do
+              d="/tmp/stitch-prior/$arm/$fold";mkdir -p "$d"
+              gh release download "stitchingnet-fabric-heldout-${arm}-f${fold}-v1" --repo '${{ github.repository }}' \
+                --pattern fabric_heldout_oof_predictions.csv --pattern fabric_heldout_report.json --dir "$d"
+              test -s "$d/fabric_heldout_oof_predictions.csv"
+              test -s "$d/fabric_heldout_report.json"
+            done
+          done
+      - name: Evaluate fixed class-prior correction determined per fold from its training fabrics
+        run: |
+          python code/scripts/fabric_prior_adjustment.py \
+            --imagenet0 /tmp/stitch-prior/imagenet/0/fabric_heldout_oof_predictions.csv \
+            --imagenet1 /tmp/stitch-prior/imagenet/1/fabric_heldout_oof_predictions.csv \
+            --imagenet2 /tmp/stitch-prior/imagenet/2/fabric_heldout_oof_predictions.csv \
+            --imagenet3 /tmp/stitch-prior/imagenet/3/fabric_heldout_oof_predictions.csv \
+            --imagenet4 /tmp/stitch-prior/imagenet/4/fabric_heldout_oof_predictions.csv \
+            --synthetic0 /tmp/stitch-prior/synthetic/0/fabric_heldout_oof_predictions.csv \
+            --synthetic1 /tmp/stitch-prior/synthetic/1/fabric_heldout_oof_predictions.csv \
+            --synthetic2 /tmp/stitch-prior/synthetic/2/fabric_heldout_oof_predictions.csv \
+            --synthetic3 /tmp/stitch-prior/synthetic/3/fabric_heldout_oof_predictions.csv \
+            --synthetic4 /tmp/stitch-prior/synthetic/4/fabric_heldout_oof_predictions.csv \
+            --imagenet0report /tmp/stitch-prior/imagenet/0/fabric_heldout_report.json \
+            --imagenet1report /tmp/stitch-prior/imagenet/1/fabric_heldout_report.json \
+            --imagenet2report /tmp/stitch-prior/imagenet/2/fabric_heldout_report.json \
+            --imagenet3report /tmp/stitch-prior/imagenet/3/fabric_heldout_report.json \
+            --imagenet4report /tmp/stitch-prior/imagenet/4/fabric_heldout_report.json \
+            --synthetic0report /tmp/stitch-prior/synthetic/0/fabric_heldout_report.json \
+            --synthetic1report /tmp/stitch-prior/synthetic/1/fabric_heldout_report.json \
+            --synthetic2report /tmp/stitch-prior/synthetic/2/fabric_heldout_report.json \
+            --synthetic3report /tmp/stitch-prior/synthetic/3/fabric_heldout_report.json \
+            --synthetic4report /tmp/stitch-prior/synthetic/4/fabric_heldout_report.json \
+            --out /tmp/stitch-prior/results
+      - name: Publish descriptive threshold operating point, not independent test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create stitchingnet-train-prior-adjustment-v1 \
+            --repo '${{ github.repository }}' --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'POSTHOC training-fabric prior correction on grouped StitchingNet CV' \
+            --notes 'This is a posthoc exploratory change of classification operating point after earlier scores had been inspected. Uses ONLY training fabric class prior within each fold, but the analysis design is retrospective. No new training, no fresh independent test and no verified calibration. Source previously inspected.' \
+            /tmp/stitch-prior/results/train_prior_adjustment.json \
+            /tmp/stitch-prior/results/TRAIN_PRIOR_ADJUSTMENT.md
