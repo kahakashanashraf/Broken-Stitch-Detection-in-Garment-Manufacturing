@@ -1,0 +1,128 @@
+name: Controlled source-weighted versus standard MobileNet grouped 5-fold ablation
+on:
+  push:
+    paths:
+      - '.github/workflows/ablate-source-balancing.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: bs-controlled-ablation-v1
+  cancel-in-progress: false
+jobs:
+  ablation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 210
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        arm: [class_only, parent_class, parent_class_aug]
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+      PYTHONUNBUFFERED: '1'
+      TORCH_HOME: /tmp/torch-weights
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Freeze release identity; block duplicate experiments
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view "source-balanced-ablation-${{ matrix.arm }}-v1" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: previously conducted arm; do not silently override evidence' >&2
+            exit 1
+          fi
+      - name: Install PyTorch and basic dependencies
+        run: |
+          python -m pip install torch torchvision scikit-learn numpy Pillow
+          python -m pip install -e code --no-deps
+      - name: Fetch ONLY signed development archives and per-image manifest
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ablation/data /tmp/ablation/result
+          gh release download leakage-controlled-dataset-v2-inferred-31-parents \
+            --repo '${{ github.repository }}' --pattern train.zip --pattern val.zip --pattern clean_manifest.csv \
+            --dir /tmp/ablation/data
+          printf '%s\n' \
+            '9ffecc2e2c25cdf948e4b6483f8d6cc3109a045bdc18b653005557d07b23bb69  /tmp/ablation/data/train.zip' \
+            '9f7df5beffc92d7247cc8b96999233ca1337f3e4e6fe2042d57d08de89c4aae6  /tmp/ablation/data/val.zip' \
+            'a873092d19c7b47987c7311a561d35cac3ef254d5aa0110e9a62fd1434a0e2c5  /tmp/ablation/data/clean_manifest.csv' | sha256sum -c -
+          test ! -f /tmp/ablation/data/test.zip
+      - name: Actually fine-tune locked MobileNetV3 on all five inferred-source-grouped folds
+        run: |
+          python code/scripts/source_balancing_ablation.py \
+            --arm '${{ matrix.arm }}' \
+            --train-zip /tmp/ablation/data/train.zip \
+            --val-zip /tmp/ablation/data/val.zip \
+            --manifest /tmp/ablation/data/clean_manifest.csv \
+            --out /tmp/ablation/result \
+            --epochs 2 --batch-size 12 --per-class 800
+      - name: Release authentic weights, OOF predictions and provenance report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="source-balanced-ablation-${{ matrix.arm }}-v1"
+          test -s /tmp/ablation/result/ablation_report.json
+          test -s /tmp/ablation/result/oof_predictions.csv
+          gh release create "$TAG" --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+            --prerelease --latest=false \
+            --title "MobileNetV3 controlled 5fold source-aware ablation: ${{ matrix.arm }}" \
+            --notes 'Development-only source-grouped 5-fold fine-tuning on 26 inferred source roots. Same per-parent-class training sample cap across arms. Class-only vs additionally parent-weighted loss vs parent-weighted plus train augmentation. Inspected holdout and StitchingNet not accessed, synthetic images and photo identities not verified. No new independent generalization claim.'
+          gh release upload "$TAG" /tmp/ablation/result/*.pt /tmp/ablation/result/ablation_report.json \
+            /tmp/ablation/result/oof_predictions.csv --repo '${{ github.repository }}'
+  compare:
+    needs: [ablation]
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install metrics dependencies only
+        run: python -m pip install numpy scikit-learn
+      - name: Retrieve immutable paired 5-fold OOF data (no original images)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view source-balanced-ablation-comparison-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: result already exists' >&2; exit 1
+          fi
+          for arm in class_only parent_class parent_class_aug; do
+            mkdir -p "/tmp/ablation-compare/$arm"
+            gh release download "source-balanced-ablation-${arm}-v1" \
+              --repo '${{ github.repository }}' --pattern oof_predictions.csv \
+              --pattern ablation_report.json --dir "/tmp/ablation-compare/$arm"
+          done
+      - name: Match all folds and train-sample hashes, calculate paired parent-bootstrap deltas
+        run: |
+          python code/scripts/compare_source_balancing_ablation.py \
+            --class-only /tmp/ablation-compare/class_only/oof_predictions.csv \
+            --class-only-report /tmp/ablation-compare/class_only/ablation_report.json \
+            --parent-class /tmp/ablation-compare/parent_class/oof_predictions.csv \
+            --parent-class-report /tmp/ablation-compare/parent_class/ablation_report.json \
+            --parent-class-aug /tmp/ablation-compare/parent_class_aug/oof_predictions.csv \
+            --parent-class-aug-report /tmp/ablation-compare/parent_class_aug/ablation_report.json \
+            --out /tmp/ablation-compare/result
+      - name: Publish paper-useful direct controlled effect-size table
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create source-balanced-ablation-comparison-v1 --repo '${{ github.repository }}' \
+            --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Controlled source-aware MobileNetV3 fine-tuning 5fold A/B/C comparison' \
+            --notes 'Matched development predictions, same folds and training sample hashes. Paired descriptive 26-inferred-parent cluster-bootstrap; NOT a previously untouched independent test. Parents inferred, synthetic augmentations and global class-stratified training subset shared by all arms.'
+          gh release upload source-balanced-ablation-comparison-v1 \
+            /tmp/ablation-compare/result/controlled_source_aware_ablation.json \
+            /tmp/ablation-compare/result/CONTROLLED_ABLATION_RESULTS.md \
+            --repo '${{ github.repository }}'
