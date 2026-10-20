@@ -1,0 +1,65 @@
+name: Compare 224px e2 e12 and frozen 128px baseline via paired grouped CV
+on:
+  workflow_run:
+    workflows:
+      - 'Actual MobileNetV3 224px 12epoch grouped-CV improved recipe'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  compare:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install comparison dependencies
+        run: python -m pip install numpy scikit-learn
+      - name: Download locked baseline and five complete fold OOF artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view enhanced-mobilenet-224e12-v1-comparison --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP comparison already published' >&2;exit 1
+          fi
+          mkdir -p /tmp/bs-224compare/old /tmp/bs-224compare/results
+          gh release download source-balanced-ablation-class_only-v1 \
+            --repo '${{ github.repository }}' --pattern oof_predictions.csv \
+            --dir /tmp/bs-224compare/old
+          printf '%s\n' '982e45a928a90fcf6a60e6966bd070737c30d2b88441f346a1f5a58e8a2f2886  /tmp/bs-224compare/old/oof_predictions.csv' | sha256sum --check
+          for k in 0 1 2 3 4; do
+            mkdir -p "/tmp/bs-224compare/fold${k}"
+            gh release download "enhanced-mobilenet-224e12-v1-${k}" \
+              --repo '${{ github.repository }}' --pattern epoch_milestone_oof.csv \
+              --dir "/tmp/bs-224compare/fold${k}"
+            test -s "/tmp/bs-224compare/fold${k}/epoch_milestone_oof.csv"
+          done
+          gh release view enhanced-mobilenet-224e12-v1-refit --repo '${{ github.repository }}' > /dev/null
+      - name: Compare exact identical old and new development OOF folds, parent-cluster uncertainty
+        run: |
+          python code/scripts/compare_enhanced_mobilenet_224.py \
+            --baseline /tmp/bs-224compare/old/oof_predictions.csv \
+            --fold0 /tmp/bs-224compare/fold0/epoch_milestone_oof.csv \
+            --fold1 /tmp/bs-224compare/fold1/epoch_milestone_oof.csv \
+            --fold2 /tmp/bs-224compare/fold2/epoch_milestone_oof.csv \
+            --fold3 /tmp/bs-224compare/fold3/epoch_milestone_oof.csv \
+            --fold4 /tmp/bs-224compare/fold4/epoch_milestone_oof.csv \
+            --out /tmp/bs-224compare/results
+      - name: Publish immutable matched-fold CV report (no external accuracy claimed)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create enhanced-mobilenet-224e12-v1-comparison \
+            --repo '${{ github.repository }}' --target '${{ github.sha }}' \
+            --prerelease --latest=false \
+            --title 'MobileNetV3 128px 2ep vs 224px 2/12ep same source-grouped CV (development only)' \
+            --notes 'Matched identical fold/sample IDs and ImageNet architecture; compare 128 vs 224 at epoch2, and 224 epoch2 vs epoch12. Checkpoint refit released separately. 26 filename-inferred parents, prior holdout and StitchingNet never accessed; cannot claim new real-world test.' \
+            /tmp/bs-224compare/results/enhanced_mobilenet_224cv_comparison.json \
+            /tmp/bs-224compare/results/ENHANCED_MOBILENET_224_COMPARISON.md \
+            /tmp/bs-224compare/results/enhanced_paired_predictions.csv
