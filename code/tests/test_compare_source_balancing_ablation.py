@@ -33,3 +33,9 @@ def test_missing_test_data_guard_in_source():
     assert 'test_and_stitchingnet_opened' in x
     assert 'paired_parent_bootstrap_descriptive_95pct' in x
     assert 'selected_image_paths_sha256' in x
+
+def test_report_writing_never_falsely_calls_global_sampling_parent_capped():
+    code=(here/'compare_source_balancing_ablation.py').read_text()
+    assert 'same parent cap' not in code
+    assert 'per-parent/class capped subset' not in code
+    assert 'globally class-stratified' in code

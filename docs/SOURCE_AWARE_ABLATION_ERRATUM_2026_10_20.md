@@ -1,0 +1,7 @@
+# Controlled source-aware ablation: wording-only erratum
+
+The immutable [comparison v1 Release](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/source-balanced-ablation-comparison-v1) inadvertently says *same per-parent/class capped training subset* in two explanatory text fields. **That wording is factually incorrect.** The actual committed fitting script [source_balancing_ablation.py](../code/scripts/source_balancing_ablation.py) performs `fixed_class_stratified_sample(..., n_per_class=800)`, selecting a total of **800 normal and 800 faulty training images globally**, not 40 or any fixed number per inferred parent. The identical path-selection hashes per fold were checked for all three arms in the successful paired comparison. Only source-loss reweighting and training-only augmentation differ.
+
+The actual measured macro-F1 values, predictions, checkpoint hashes, paired parent bootstrap estimates, CV fold assignments, and archived GitHub Release **have NOT changed**. The corrected structured interpretation is [here](source_aware_ablation_results_v1_corrected.json). The v1 Release is preserved for auditability, not silently overwritten.
+
+Verdict: B–A **−0.00004184** pooled macro-F1, descriptive source-cluster interval **[−0.00978, +0.00810]**. C–B **−0.00562**, interval **[−0.02386, +0.01562]**. These show no demonstrated improvement in this exploratory, previously investigated development pool. Source lineage and external independent validation remain unresolved.

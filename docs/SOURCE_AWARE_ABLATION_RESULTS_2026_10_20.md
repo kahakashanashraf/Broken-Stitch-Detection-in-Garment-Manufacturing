@@ -1,3 +1,5 @@
+> **Wording erratum (20 October 2026):** The original Release v1 JSON incorrectly described the training subset as *per-parent capped*. The actual trained A/B/C runs all used the **same globally class-stratified 800 normal + 800 faulty training images per fold, without a parent-specific cap**. Only class-vs-source loss weighting and online augmentation changed. All scores, predictions and paired bootstrap intervals below are unchanged. See [corrected structured report](source_aware_ablation_results_v1_corrected.json).
+
 # Controlled source-weighting and train-only augmentation ablation
 
 **Exploratory development-only 5-fold grouped-CV results**; 26 inferred photo parents, 6,278 augmented image records.
