@@ -1,0 +1,80 @@
+name: Refit selected supervised StitchingNet fabric-generalization model
+on:
+  workflow_run:
+    workflows:
+      - 'Compare supervised heldout-fabric StitchingNet adaptation and prior zero-shot model'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  refit:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prevent any false independent test or overwriting immutable weights
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view stitchingnet-fabric-adapt-selected-refit-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: refit weights release exists and may not be overwritten' >&2;exit 1
+          fi
+      - name: Install CPU training dependencies
+        run: |
+          python -m pip install torch torchvision scikit-learn numpy Pillow
+          python -m pip install -e code --no-deps
+      - name: Select winner using five-fabric OOF releases, not reused heldout or external test
+        id: winner
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fabrefit/input /tmp/fabrefit/out
+          gh release download stitchingnet-fabric-adapt-comparison-v1 --repo '${{ github.repository }}' \
+            --pattern fabric_group_adaptation_comparison.json --dir /tmp/fabrefit/input
+          SELECTED=$(python - <<'PY'
+          import json,sys
+          sys.path.insert(0,'code/scripts')
+          from refit_stitchingnet_fabric import select_arm
+          report=json.load(open('/tmp/fabrefit/input/fabric_group_adaptation_comparison.json'))
+          print(select_arm(report))
+          PY
+          )
+          echo "selected=$SELECTED" >> "$GITHUB_OUTPUT"
+          echo "OOF-selected initialization: $SELECTED"
+      - name: Verify immutable synthetic weights and official license-bearing dataset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release download enhanced-mobilenet-224e12-v1-refit --repo '${{ github.repository }}' \
+            --pattern mobilenet_v3_224px_12epoch_dev_refit.pt --dir /tmp/fabrefit/input
+          echo '0c1eaf25ad7daea5370fd16492b811c0b90408adb3a561f47d3a5c5c48a83a81  /tmp/fabrefit/input/mobilenet_v3_224px_12epoch_dev_refit.pt' | sha256sum -c -
+          curl --fail -L --retry 5 --retry-all-errors --retry-delay 5 \
+            'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' -o /tmp/fabrefit/input/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/fabrefit/input/StitchingNet.zip' | md5sum -c -
+      - name: Final supervised refit on all 11 StitchingNet fabrics (no independent validation)
+        run: |
+          python code/scripts/refit_stitchingnet_fabric.py \
+            --comparison /tmp/fabrefit/input/fabric_group_adaptation_comparison.json \
+            --stitchingnet-zip /tmp/fabrefit/input/StitchingNet.zip \
+            --synthetic-weights /tmp/fabrefit/input/mobilenet_v3_224px_12epoch_dev_refit.pt \
+            --arm '${{ steps.winner.outputs.selected }}' --epochs 6 --batch-size 16 \
+            --out /tmp/fabrefit/out
+      - name: Publish inference weights with no independent test score
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create stitchingnet-fabric-adapt-selected-refit-v1 \
+            --repo '${{ github.repository }}' --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Supervised StitchingNet all-11-fabrics refit selected by group-heldout OOF CV' \
+            --notes 'Selected by exploratory grouped out-of-fold StitchingNet CV, then refit using ALL 3637 StitchingNet normal and broken images. This checkpoint HAS NO untouched holdout/test score. This is not thesis-only zero-shot transfer. External independent dataset needed for future evaluation. Original data license CC BY-NC 4.0, no raw images republished.' \
+            /tmp/fabrefit/out/fabric_adapted_selected_model.pt \
+            /tmp/fabrefit/out/domain_refit_provenance.json
