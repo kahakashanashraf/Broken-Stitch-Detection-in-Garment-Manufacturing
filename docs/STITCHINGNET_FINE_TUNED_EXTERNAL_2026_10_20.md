@@ -18,7 +18,7 @@ This is **external-domain transfer but not a new blind or untouched benchmark**.
 |---|---:|---:|---:|---:|---:|---:|---:|
 | A: class-balanced MobileNetV3 | **75.34%** | **0.72163** | **72.20%** | 62.95% | 445 | 452 | 0.77686 |
 | B: class-and-parent-balanced MobileNetV3 | 74.26% | 0.71091 | 71.23% | 62.28% | 453 | 483 | 0.76539 |
-| C: B + train-only augmentation | 71.82% | 0.69926 | **71.55%** | **70.77%** | **351** | 674 | 0.78304 |
+| C: B + train-only augmentation | 71.82% | 0.69926 | 71.55% | **70.77%** | **351** | 674 | 0.78304 |
 | MobileNetV3 architecture-CV refit (different training recipe) | 74.43% | 0.67629 | 66.54% | 43.30% | 681 | 249 | 0.78290 |
 | DenseNet121 architecture-CV refit | 73.93% | 0.71144 | 71.63% | 64.86% | 422 | 526 | **0.80749** |
 | VGG16 architecture-CV refit | 75.12% | 0.61940 | 62.32% | **24.65%** | **905** | 0 | 0.79401 |
