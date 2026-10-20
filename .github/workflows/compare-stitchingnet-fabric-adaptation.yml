@@ -1,0 +1,68 @@
+name: Compare supervised heldout-fabric StitchingNet adaptation and prior zero-shot model
+on:
+  workflow_run:
+    workflows:
+      - 'Supervised StitchingNet adaptation with held-out fabric groups and Grad-CAM XAI'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  aggregate:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install metrics dependencies
+        run: python -m pip install numpy scikit-learn
+      - name: Read only immutable 10 fabric-fold OOF releases and prior frozen zero-shot predictions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view stitchingnet-fabric-adapt-comparison-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: completed paired comparison already published' >&2; exit 1
+          fi
+          mkdir -p /tmp/fabricadapt
+          for arm in imagenet synthetic; do
+            for fold in 0 1 2 3 4; do
+              d="/tmp/fabricadapt/$arm/$fold";mkdir -p "$d"
+              gh release download "stitchingnet-fabric-heldout-${arm}-f${fold}-v1" \
+                --repo '${{ github.repository }}' --pattern fabric_heldout_oof_predictions.csv --dir "$d"
+              test -s "$d/fabric_heldout_oof_predictions.csv"
+            done
+          done
+          mkdir -p /tmp/fabricadapt/zero
+          gh release download enhanced-224e12-stitchingnet-descriptive-v1 \
+            --repo '${{ github.repository }}' --pattern external_enhanced_predictions.csv --dir /tmp/fabricadapt/zero
+          test -s /tmp/fabricadapt/zero/external_enhanced_predictions.csv
+      - name: Compare paired fabric-heldout CV and published zero-shot descriptive score
+        run: |
+          python code/scripts/compare_fabric_adaptation.py \
+            --imagenet0 /tmp/fabricadapt/imagenet/0/fabric_heldout_oof_predictions.csv \
+            --imagenet1 /tmp/fabricadapt/imagenet/1/fabric_heldout_oof_predictions.csv \
+            --imagenet2 /tmp/fabricadapt/imagenet/2/fabric_heldout_oof_predictions.csv \
+            --imagenet3 /tmp/fabricadapt/imagenet/3/fabric_heldout_oof_predictions.csv \
+            --imagenet4 /tmp/fabricadapt/imagenet/4/fabric_heldout_oof_predictions.csv \
+            --synthetic0 /tmp/fabricadapt/synthetic/0/fabric_heldout_oof_predictions.csv \
+            --synthetic1 /tmp/fabricadapt/synthetic/1/fabric_heldout_oof_predictions.csv \
+            --synthetic2 /tmp/fabricadapt/synthetic/2/fabric_heldout_oof_predictions.csv \
+            --synthetic3 /tmp/fabricadapt/synthetic/3/fabric_heldout_oof_predictions.csv \
+            --synthetic4 /tmp/fabricadapt/synthetic/4/fabric_heldout_oof_predictions.csv \
+            --zero-shot /tmp/fabricadapt/zero/external_enhanced_predictions.csv \
+            --out /tmp/fabricadapt/results
+      - name: Publish fabric-wise pair comparisons without falsely claiming new test
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create stitchingnet-fabric-adapt-comparison-v1 \
+            --repo '${{ github.repository }}' --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Exploratory supervised StitchingNet fabric-heldout 5-fold CV, ImageNet vs synthetic pretrained init' \
+            --notes 'Both new models are trained on StitchingNet training fabrics; not zero-shot transfer, not fresh independent evaluation. Same 11 fabric groups, 5 folds, binary 3637 images. Compare against older zero-shot thesis-only model purely as descriptive context. Descriptive paired 11-fabric bootstrap and qualitative Grad-CAM released per fold.' \
+            /tmp/fabricadapt/results/fabric_group_adaptation_comparison.json \
+            /tmp/fabricadapt/results/FABRIC_ADAPTATION_COMPARISON.md
