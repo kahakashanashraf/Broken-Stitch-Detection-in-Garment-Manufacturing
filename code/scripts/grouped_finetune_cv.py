@@ -260,6 +260,7 @@ def fit_once(model_name,rows,tr_indices,va_indices,archives,fold_id,epochs,devic
 def run(args):
     device='cuda' if torch.cuda.is_available() else 'cpu'
     torch.set_num_threads(min(4,os.cpu_count() or 2))
+    print('COMPUTE_DEVICE',device,flush=True)
     archives={'train':Path(args.train_zip),'val':Path(args.val_zip)}
     dev=verify_dev_inputs(args.manifest,archives)
     x=np.arange(len(dev));y=np.asarray([0 if r['label']=='actual' else 1 for r in dev])
@@ -270,7 +271,8 @@ def run(args):
     for k,(tr,va) in enumerate(cv.split(x,y,groups)):
         if len(set(groups[tr])&set(groups[va])):raise ValueError('STOP: fold groups leaked')
         if len(set(y[tr]))!=2 or len(set(y[va]))!=2:raise ValueError('STOP: fold missing class')
-        model,info,yt,yp=fit_once(args.model,dev,tr,va,archives,k,epochs=args.epochs,batch_size=args.batch_size,cap=args.cap)
+        model,info,yt,yp=fit_once(args.model,dev,tr,va,archives,k,epochs=args.epochs,
+                                  device=device,batch_size=args.batch_size,cap=args.cap)
         if yt!=y[va].tolist():raise ValueError('STOP: sample/pred alignment failed')
         probs[va]=yp;assign[va]=k
         this=evaluate(yt,yp)
@@ -283,7 +285,8 @@ def run(args):
     # OOF results are from five disjoint validation roots, but post-hoc comparison of
     # these three architectures is still developmental selection, not a new test.
     refit_indices=np.arange(len(dev));empty=np.asarray([],dtype=int)
-    final,info,_,_=fit_once(args.model,dev,refit_indices,empty,archives,99,epochs=args.epochs,batch_size=args.batch_size,cap=args.cap,refit=True)
+    final,info,_,_=fit_once(args.model,dev,refit_indices,empty,archives,99,epochs=args.epochs,
+                             device=device,batch_size=args.batch_size,cap=args.cap,refit=True)
     save={'architecture':args.model,'head':final.head.state_dict(),'features':final.features.state_dict(),
           'label_map':{'actual':0,'faulty':1},'pretrained':True,
           'trainable_tail_params':final.tail_parameter_n,
@@ -297,6 +300,7 @@ def run(args):
         for i,r in enumerate(dev):w.writerow([r['clean_path'],r['label'],r['inferred_photographed_source'],int(assign[i]),float(probs[i])])
     report={'status':'FINE_TUNED_CONV_LAYERS_GROUPED_5FOLD_DEVELOPMENT_ONLY',
             'architecture':args.model,'model_checkpoint':ck.name,
+            'compute_device_used':device,
             'checkpoint_sha256':file_sha(ck),'checkpoint_bytes':ck.stat().st_size,
             'pretrained_imagenet':True,'fully_frozen_encoder':False,
             'trainable_tail_parameters':info['tail_trainable_parameters'],

@@ -2,6 +2,8 @@
 
 [![Unit tests](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/workflows/tests.yml/badge.svg)](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/workflows/tests.yml)
 
+> **Current status (20 Oct 2026):** [Cleaned 31-inferred-parent dataset v2](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/leakage-controlled-dataset-v2-inferred-31-parents), [controlled 26-parent grouped-CV ablation](docs/SOURCE_AWARE_ABLATION_RESULTS_2026_10_20.md), [six frozen-model StitchingNet external transfers](docs/STITCHINGNET_FINE_TUNED_EXTERNAL_2026_10_20.md), and [training bottleneck / next experiment plan](docs/MODEL_IMPROVEMENT_ROADMAP_2026_10_20.md). **Best observed non-blind StitchingNet binary macro-F1 0.7216** with class-balanced fine-tuned MobileNetV3; broken recall 62.95%. Neither new model rankings nor 2022 thesis score are fresh independent-source confirmation. GPU device forwarding fixed in training code; no new higher-resolution or longer-epoch experiment has been run. **Some older dated sections below are historical and must not be read as latest status.**
+
 **Unpublished 2022 thesis reproduction and ICEEICT 2027 research-extension working project.**
 
 This repository contains a modern **PyTorch reconstruction** of CNN/VGG-16 experiment families, validation-safety tests, historical thesis figures, a public copy of the raw original data archive, and an IEEE-format **working manuscript**. The original 2022 source code and model weights have NOT been recovered.
