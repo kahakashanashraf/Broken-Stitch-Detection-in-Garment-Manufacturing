@@ -1,0 +1,126 @@
+{
+  "status": "DESCRIPTIVE_POST_HOC_DEVELOPMENT_ONLY_ABLATION_NO_INDEPENDENT_TEST",
+  "scientific_question": "Does additional inferred-source class-balanced loss reweighting, and separately training-only augmentation, change grouped-CV performance versus class-weighting-only?",
+  "arms": {
+    "class_only": "Class-balanced loss, same parent cap, no online augmentation",
+    "parent_class": "Class-and-inferred-parent-balanced loss, same cap, no online augmentation",
+    "parent_class_aug": "Same as parent_class plus train-only rotation/color jitter"
+  },
+  "fair_controls": [
+    "identical 26 inferred parent CV groups and five folds",
+    "identical training images within each fold, SHA seeded global class-stratified 800 images per class (1600 total), no per-parent sampling cap",
+    "identical ImageNet MobileNetV3-Small, convolutional tail, optimizer, learning rate, epochs, resize, seed",
+    "identical 0.5 threshold and no validation tuning"
+  ],
+  "n_dev_images": 6278,
+  "parent_candidates": 26,
+  "bootstrap_parent_candidates": 26,
+  "bootstrap_draws": 2000,
+  "seed": 20261020,
+  "model_scores": {
+    "class_only": {
+      "n": 6278,
+      "macro_f1": 0.7434738926709479,
+      "balanced_accuracy": 0.7525949424596277,
+      "normal_recall": 0.74643011683254,
+      "faulty_recall": 0.7587597680867154,
+      "faulty_roc_auc": 0.8199028833396945,
+      "confusion_matrix_normal_faulty": [
+        [
+          1725,
+          586
+        ],
+        [
+          957,
+          3010
+        ]
+      ],
+      "bootstrap_parent_cluster_95pct_macro_f1": [
+        0.7021701378145105,
+        0.7829995597452467
+      ]
+    },
+    "parent_class": {
+      "n": 6278,
+      "macro_f1": 0.7434320509065339,
+      "balanced_accuracy": 0.7498268111312529,
+      "normal_recall": 0.7265253137170056,
+      "faulty_recall": 0.7731283085455004,
+      "faulty_roc_auc": 0.8201275843755117,
+      "confusion_matrix_normal_faulty": [
+        [
+          1679,
+          632
+        ],
+        [
+          900,
+          3067
+        ]
+      ],
+      "bootstrap_parent_cluster_95pct_macro_f1": [
+        0.7022031255680046,
+        0.7834503063879283
+      ]
+    },
+    "parent_class_aug": {
+      "n": 6278,
+      "macro_f1": 0.7378105272953883,
+      "balanced_accuracy": 0.7545158090813469,
+      "normal_recall": 0.7918649935093033,
+      "faulty_recall": 0.7171666246533904,
+      "faulty_roc_auc": 0.8162483282406553,
+      "confusion_matrix_normal_faulty": [
+        [
+          1830,
+          481
+        ],
+        [
+          1122,
+          2845
+        ]
+      ],
+      "bootstrap_parent_cluster_95pct_macro_f1": [
+        0.6944873991016458,
+        0.7792130213060839
+      ]
+    }
+  },
+  "paired_effects": {
+    "parent_class_minus_class_only": {
+      "pooled_macro_f1_delta": -4.184176441401899e-05,
+      "paired_parent_bootstrap_descriptive_95pct": [
+        -0.009780032788965554,
+        0.008097783604129842
+      ],
+      "bootstrap_fraction_positive_descriptive": 0.509,
+      "hypothesis": "Additional source reweighting within identical per-parent-capped training pool"
+    },
+    "parent_class_aug_minus_parent_class": {
+      "pooled_macro_f1_delta": -0.00562152361114554,
+      "paired_parent_bootstrap_descriptive_95pct": [
+        -0.02386196888892246,
+        0.015617058807157577
+      ],
+      "bootstrap_fraction_positive_descriptive": 0.292,
+      "hypothesis": "Additional augmentation / combined changes under identical folds"
+    },
+    "parent_class_aug_minus_class_only": {
+      "pooled_macro_f1_delta": -0.005663365375559559,
+      "paired_parent_bootstrap_descriptive_95pct": [
+        -0.02218615840358395,
+        0.012464560699938848
+      ],
+      "bootstrap_fraction_positive_descriptive": 0.26,
+      "hypothesis": "Additional augmentation / combined changes under identical folds"
+    }
+  },
+  "not_a_new_independent_test": true,
+  "test_and_stitchingnet_opened": false,
+  "important_limitations": [
+    "All three arms train on the same per-parent/class capped subset; this tests incremental source weighting, not source balancing vs unrestricted image sampling.",
+    "The parent candidate identities are inferred from filenames and Photoshop derivative linking, not independently verified raw photography.",
+    "All labels include historical synthetic Photoshop fault images and augmentation variants.",
+    "Only 26 candidate source units; resampling CIs are descriptive conditional on development pool.",
+    "Hypothesis selected after multiple prior model results were seen; cannot claim confirmatory causal generalization to untouched real-world sources."
+  ]
+}
