@@ -1,0 +1,84 @@
+name: Actual fine-tuning comparison on clean v2 inferred-parent grouped 5-fold CV
+on:
+  push:
+    paths:
+      - '.github/workflows/finetune-grouped-cv.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: grouped-finetune-cv-v1
+  cancel-in-progress: false
+jobs:
+  grouped_cv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        architecture: [mobilenetv3, densenet121, vgg16]
+    env:
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+      PYTHONUNBUFFERED: '1'
+      TORCH_HOME: /tmp/torch-models
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Guard immutable versioned results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="fine-tuned-groupedcv-${{ matrix.architecture }}-v1"
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo "STOP: grouped-CV result for $TAG already published, refusing retrain" >&2
+            exit 1
+          fi
+      - name: Install train/validation dependencies
+        run: |
+          python -m pip install torch torchvision scikit-learn numpy Pillow
+          python -m pip install -e code --no-deps
+      - name: Verify and download ONLY cleaned development archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/groupedcv/data /tmp/groupedcv/results
+          gh release download leakage-controlled-dataset-v2-inferred-31-parents \
+            --repo '${{ github.repository }}' \
+            --pattern train.zip --pattern val.zip --pattern clean_manifest.csv \
+            --dir /tmp/groupedcv/data
+          printf '%s\n' \
+            '9ffecc2e2c25cdf948e4b6483f8d6cc3109a045bdc18b653005557d07b23bb69  /tmp/groupedcv/data/train.zip' \
+            '9f7df5beffc92d7247cc8b96999233ca1337f3e4e6fe2042d57d08de89c4aae6  /tmp/groupedcv/data/val.zip' \
+            'a873092d19c7b47987c7311a561d35cac3ef254d5aa0110e9a62fd1434a0e2c5  /tmp/groupedcv/data/clean_manifest.csv' | sha256sum -c -
+          test ! -f /tmp/groupedcv/data/test.zip
+      - name: Run 5-fold fixed fine-tuning on 26 development parent candidates, then refit
+        run: |
+          python code/scripts/grouped_finetune_cv.py \
+            --model '${{ matrix.architecture }}' \
+            --train-zip /tmp/groupedcv/data/train.zip \
+            --val-zip /tmp/groupedcv/data/val.zip \
+            --manifest /tmp/groupedcv/data/clean_manifest.csv \
+            --out /tmp/groupedcv/results \
+            --epochs 2 --batch-size 12 --cap 40
+      - name: Publish trained weights plus complete OOF metrics and predictions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="fine-tuned-groupedcv-${{ matrix.architecture }}-v1"
+          test -s /tmp/groupedcv/results/training_cv_report.json
+          test -s /tmp/groupedcv/results/oof_predictions.csv
+          gh release create "$TAG" --repo '${{ github.repository }}' \
+            --target '${{ github.sha }}' --prerelease --latest=false \
+            --title "ACTUAL pretrained ${{ matrix.architecture }} convolutional fine-tuning; inferred 26-parent development CV" \
+            --notes 'ImageNet pretrained last convolutional stages genuinely optimized and refit on DEVELOPMENT 26 filename-inferred parent roots ONLY. 5-fold StratifiedGroupKFold OOF and cap 40 samples per photo/class; 128x128, fixed 2 epochs, group-balanced weighted BCE. Prior 5-root holdout and StitchingNet NOT downloaded or used, labels derived from original Photoshop augmentation; not a new independent deployment estimate.'
+          gh release upload "$TAG" /tmp/groupedcv/results/*.pt \
+            /tmp/groupedcv/results/training_cv_report.json \
+            /tmp/groupedcv/results/oof_predictions.csv \
+            --repo '${{ github.repository }}'
