@@ -1,0 +1,58 @@
+name: Summarize six completed frozen StitchingNet transfers with fabric-wise uncertainty
+on:
+  workflow_run:
+    workflows:
+      - 'Descriptive cross-domain StitchingNet evaluation of six frozen fine-tuned models'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  summary:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install read-only statistical dependencies
+        run: python -m pip install numpy scikit-learn
+      - name: Verify all six immutable external predictions exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view stitchingnet-descriptive-finetuned-comparison-v1 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'Summary already archived. Do not overwrite.' >&2; exit 1
+          fi
+          for model in class_only parent_class parent_class_aug mobilenetv3 densenet121 vgg16; do
+            mkdir -p "/tmp/stitch-transfer/$model"
+            gh release download "stitchingnet-descriptive-finetuned-${model}-v1" --repo '${{ github.repository }}' \
+              --pattern external_predictions.csv --pattern external_metrics.json \
+              --dir "/tmp/stitch-transfer/$model"
+          done
+      - name: Recompute paired summary from frozen prediction CSV files
+        run: |
+          python code/scripts/compare_stitchingnet_transfer.py \
+            --class_only /tmp/stitch-transfer/class_only/external_predictions.csv \
+            --parent_class /tmp/stitch-transfer/parent_class/external_predictions.csv \
+            --parent_class_aug /tmp/stitch-transfer/parent_class_aug/external_predictions.csv \
+            --mobilenetv3 /tmp/stitch-transfer/mobilenetv3/external_predictions.csv \
+            --densenet121 /tmp/stitch-transfer/densenet121/external_predictions.csv \
+            --vgg16 /tmp/stitch-transfer/vgg16/external_predictions.csv \
+            --out /tmp/stitch-transfer/comparison
+      - name: Publish evidence table and descriptive uncertainty analysis
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create stitchingnet-descriptive-finetuned-comparison-v1 \
+            --repo '${{ github.repository }}' --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Six frozen fine-tuned model transfers to already-inspected StitchingNet' \
+            --notes 'No external training/calibration. Non-blind descriptive evaluation; same 3,637 normal/broken images, 11 fabric groups and previously frozen 0.5 threshold. Paired bootstrap resamples fabrics (11 groups), not independent seam-source images. No independent test/SOTA claims.'
+          gh release upload stitchingnet-descriptive-finetuned-comparison-v1 \
+            /tmp/stitch-transfer/comparison/stitchingnet_transfer_comparison.json \
+            /tmp/stitch-transfer/comparison/STITCHINGNET_TRANSFER_COMPARISON.md \
+            --repo '${{ github.repository }}'
