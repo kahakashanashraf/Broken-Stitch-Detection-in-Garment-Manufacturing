@@ -1,0 +1,86 @@
+name: Matched StitchingNet fabric-heldout supervised budget trial 6 vs 30 epochs
+on:
+  push:
+    paths:
+      - '.github/workflows/stitchingnet-fabric-budget30.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: stitch-fabric-budget30-v2
+  cancel-in-progress: false
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        arm: [imagenet, synthetic]
+        fold: ['0', '1', '2', '3', '4']
+    env:
+      PYTHONUNBUFFERED: '1'
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+      TORCH_HOME: /tmp/torch-pretrained
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fail closed if immutable result already published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="stitchingnet-fabric-budget30-${{ matrix.arm }}-f${{ matrix.fold }}-v2"
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo "STOP: exact budget study release already exists" >&2; exit 1
+          fi
+      - name: Install CPU deep learning and test dependencies
+        run: |
+          python -m pip install torch torchvision scikit-learn numpy Pillow pytest
+          python -m pip install -e code --no-deps
+      - name: Check source and comparison guardrails on synthetic fixtures
+        run: python -m pytest -q code/tests/test_fabric_budget_30.py
+      - name: Retrieve identical official real-data and pinned synthetic checkpoint
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/budget30/input /tmp/budget30/output
+          gh release download enhanced-mobilenet-224e12-v1-refit \
+            --repo '${{ github.repository }}' \
+            --pattern mobilenet_v3_224px_12epoch_dev_refit.pt \
+            --dir /tmp/budget30/input
+          echo '0c1eaf25ad7daea5370fd16492b811c0b90408adb3a561f47d3a5c5c48a83a81  /tmp/budget30/input/mobilenet_v3_224px_12epoch_dev_refit.pt' | sha256sum -c -
+          curl --fail -L --retry 5 --retry-all-errors --retry-delay 5 \
+            'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' \
+            -o /tmp/budget30/input/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/budget30/input/StitchingNet.zip' | md5sum -c -
+      - name: Run unchanged baseline trajectory to 6 epochs and extend to 30
+        run: |
+          python code/scripts/fabric_budget_30_cv.py \
+            --stitchingnet-zip /tmp/budget30/input/StitchingNet.zip \
+            --synthetic-weights /tmp/budget30/input/mobilenet_v3_224px_12epoch_dev_refit.pt \
+            --arm '${{ matrix.arm }}' \
+            --fold '${{ matrix.fold }}' \
+            --epochs 30 --batch-size 16 \
+            --out /tmp/budget30/output
+      - name: Publish immutable fold predictions and training evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="stitchingnet-fabric-budget30-${{ matrix.arm }}-f${{ matrix.fold }}-v2"
+          test -s /tmp/budget30/output/budget_heldout_oof.csv
+          test -s /tmp/budget30/output/budget_heldout_report.json
+          gh release create "$TAG" --repo '${{ github.repository }}' \
+            --target '${{ github.sha }}' --prerelease --latest=false \
+            --title "Matched 6 vs 30 epochs ${{ matrix.arm }} unseen-fabric fold ${{ matrix.fold }}" \
+            --notes 'Exploratory matched training-duration experiment only: same MobileNetV3-Small initialization, 11 fabrics grouped into 5 heldout folds, batch=16, 224px, same optimizer and aug, read-only fixed epoch 6/30 OOF. This dataset was previously inspected and is not a new independent test. No original StitchingNet images republished (CC BY-NC 4.0).'
+          gh release upload "$TAG" \
+            /tmp/budget30/output/budget_heldout_oof.csv \
+            /tmp/budget30/output/budget_heldout_report.json \
+            --repo '${{ github.repository }}'
