@@ -1,0 +1,55 @@
+name: Export verified Grad-CAM case PNGs for paper
+on:
+  push:
+    paths:
+      - '.github/workflows/export-gradcam-paper-figures.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fetch exactly published paired Grad-CAM images
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/real_xai_paper
+          gh release download thesis-only-vs-fabric-heldout-gradcam-v1 \
+            --repo '${{ github.repository }}' \
+            --pattern fold0_true_positive_paired_gradcam.png \
+            --pattern fold2_false_negative_paired_gradcam.png \
+            --dir /tmp/real_xai_paper
+          test -s /tmp/real_xai_paper/fold0_true_positive_paired_gradcam.png
+          test -s /tmp/real_xai_paper/fold2_false_negative_paired_gradcam.png
+      - name: Encode resized ORIGINAL evidence figures to verified ASCII transport
+        run: |
+          python -m pip install Pillow
+          python - <<'PY'
+          from PIL import Image
+          import base64,hashlib,io
+          from pathlib import Path
+          root=Path('/tmp/real_xai_paper')
+          for stem in ['fold0_true_positive_paired_gradcam','fold2_false_negative_paired_gradcam']:
+              raw=(root/(stem+'.png')).read_bytes()
+              assert raw[:8]==b'\x89PNG\r\n\x1a\n'
+              im=Image.open(io.BytesIO(raw)).convert('RGB')
+              print('EVIDENCE_ORIGINAL',stem,len(raw),hashlib.sha256(raw).hexdigest(),im.size)
+              # Crop nothing. Resizing down is for paper figure reproduction only.
+              factor=min(1.,400/im.width)
+              new=(max(1,round(im.width*factor)),max(1,round(im.height*factor)))
+              im=im.resize(new,Image.Resampling.LANCZOS)
+              stream=io.BytesIO()
+              im.save(stream,format='PNG',optimize=True)
+              data=stream.getvalue()
+              print('EVIDENCE_RESIZED',stem,len(data),hashlib.sha256(data).hexdigest(),new)
+              print('BASE64_BEGIN',stem)
+              print(base64.b64encode(data).decode())
+              print('BASE64_END',stem)
+          PY
