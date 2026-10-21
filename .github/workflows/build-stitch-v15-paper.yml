@@ -1,0 +1,55 @@
+name: Build v15 IEEE paper with original input photos
+on:
+  push:
+    paths:
+      - 'paper/ICEEICT2027_BrokenStitch_v15_Real_Input_Preprocessing.tex'
+      - 'paper/reproduce_v15_real_samples.py'
+      - '.github/workflows/build-stitch-v15-paper.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: stitch-v15-pdf
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install LaTeX and image libraries
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-publishers texlive-fonts-recommended poppler-utils
+          python -m pip install Pillow numpy
+      - name: Make source-photograph and computed-Sobel figure
+        run: python paper/reproduce_v15_real_samples.py
+      - name: Compile manuscript and preflight
+        run: |
+          set -euo pipefail
+          cd paper
+          DOC=ICEEICT2027_BrokenStitch_v15_Real_Input_Preprocessing
+          pdflatex -halt-on-error -interaction=nonstopmode "$DOC.tex" > /tmp/stitch_v15_1.log
+          pdflatex -halt-on-error -interaction=nonstopmode "$DOC.tex" > /tmp/stitch_v15_2.log
+          test "$(pdfinfo "$DOC.pdf" | awk '/^Pages:/{print $2}')" -le 6
+          pdfinfo "$DOC.pdf" | grep -q 'Page size:.*A4'
+          test "$(grep -c '\\bibitem{' "$DOC.tex")" -eq 20
+          if grep -E 'Citation .* undefined|Reference .* undefined|LaTeX Warning:.*undefined|Overfull \\hbox' /tmp/stitch_v15_2.log; then
+            echo 'STOP: document references or layout issues' >&2; exit 1
+          fi
+          if pdffonts "$DOC.pdf" | grep -q 'Type 3'; then echo 'STOP: Type 3 fonts' >&2; exit 1; fi
+          sha256sum "$DOC.pdf" > V15_PDF_SHA256.txt
+          pdfinfo "$DOC.pdf" | grep -E 'Pages:|Page size:|File size:'
+      - name: Publish reproducible PDF and data figure
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add paper/figures_v15/original_stitch_preprocessing.png \
+                  paper/ICEEICT2027_BrokenStitch_v15_Real_Input_Preprocessing.pdf \
+                  paper/V15_PDF_SHA256.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish conference PDF with true source stitch images and Sobel preprocessing'
+            git push
+          fi
