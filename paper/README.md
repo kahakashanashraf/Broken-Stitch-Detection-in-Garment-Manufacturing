@@ -1,19 +1,35 @@
-# ICEEICT 2027 — anonymous IEEE working manuscript
+# Broken-Stitch Detection on Unseen Fabrics — ICEEICT 2027 working paper
 
-Files in this directory:
+**Current manuscript: v13 (21 October 2026).** The paper studies group-based testing, edge fusion and Grad-CAM analysis. This is a **research working draft**, not a cleared submission. Human coauthors must verify the data rights, citations, manuscript content, anonymous submission rules and AI-use policy.
 
-- [`main.tex`](main.tex): editable IEEE manuscript describing *historical* thesis results and a **proposed, unexecuted** source-disjoint and StitchingNet validation protocol.
-- [`ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf`](ICEEICT2027_BrokenStitch_Research_Extension_v2_Anonymous.pdf): 6-page PDF compiled in GitHub Actions with original thesis images.
-- [`figures/`](figures/): ten historical figures extracted from the unpublished thesis; four are currently referenced by the TeX.
-- [`PAPER_SHA256.txt`](PAPER_SHA256.txt): SHA-256 of the compiled PDF.
-- [`restore_figures.py`](restore_figures.py): option to restore a local figures ZIP if needed.
+## Latest paper files
 
-Compile with IEEEtran and TeX packages (graphicx, booktabs, cite, amsmath, hyperref, etc.):
+- **[IEEE PDF, v13](ICEEICT2027_BrokenStitch_v13_Introduction_Flow.pdf)** — 5 A4 IEEE two-column pages; 20 cited references; model and experimental figures inside the paper.
+- **[Editable LaTeX, v13](ICEEICT2027_BrokenStitch_v13_Introduction_Flow.tex)** — contains an Introduction with a continuous problem → gap → positioning → RQ1–RQ4 → contributions flow.
+- **[Reproduced figures](figures_v13/)** — the actual held-out-fabric F1 chart and deterministic colorized Grad-CAM evidence from released grayscale maps. These are qualitative, not verified defect-localization masks.
+- **[Figure generator](reproduce_v13_figures.py)** — verifies both original GitHub release PNG SHA-256 digests before regenerating the figures.
+- **[GitHub Actions build](../.github/workflows/build-evidence-v13-paper.yml)** — compiles and checks the PDF, then publishes it together with its figures.
+
+## What the manuscript reports
+
+On StitchingNet's normal/broken subset (3,637 images, 11 fabric settings), five-fold held-out-fabric training yields **macro-F1 0.7969** (ImageNet initialization) and **0.8089** (added edited-image pretraining). A matched hybrid with a small Sobel edge branch reaches **0.8082**, and 30 epochs do not improve macro-F1 relative to 6 epochs in the matched training-budget run. Grad-CAM compares deliberately selected cases; do not infer population recall or precise localization from them. The separate image-lineage audit shows the sensitivity of development scores to related-image splitting.
+
+**Evidence status:** StitchingNet was inspected previously, so the later experiments are retrospective/descriptive rather than independent blind tests. All models in fabric-held-out CV train on StitchingNet labels from *other* fabrics. Do not describe that score as zero-shot external transfer or factory performance.
+
+## Compiling the paper
+
+Clone the repository, install an IEEEtran-capable LaTeX distribution with the listed TeX packages, and run:
 
 ```bash
 cd paper
-pdflatex -halt-on-error -interaction=nonstopmode main.tex
-pdflatex -halt-on-error -interaction=nonstopmode main.tex
+pdflatex -halt-on-error -interaction=nonstopmode ICEEICT2027_BrokenStitch_v13_Introduction_Flow.tex
+pdflatex -halt-on-error -interaction=nonstopmode ICEEICT2027_BrokenStitch_v13_Introduction_Flow.tex
 ```
 
-**Not a submission-ready new-results paper.** No new real-data training, source-disjoint performance or cross-dataset evaluation has been run. Figures and thesis dataset are public at the owner's request but provenance/licensing have NOT been independently cleared. GitHub repository visibility does not grant a reuse license. Anonymity of a public author-associated repository must be considered under the venue's double-blind review rules.
+The figures are checked into `figures_v13/`. To reproduce them afresh, use the workflow noted above; it downloads the original released Grad-CAM evidence and checks source SHA-256 hashes.
+
+## Older archived versions
+
+Older files such as `evidence_audit_v4.tex` and `main.tex` are archived working drafts. Their earlier stated results, methodologies, and unfinished research plans must **not** be treated as the current manuscript. The v13 files linked above are the latest editable conference-paper version.
+
+**Submission caveat:** Ensure original-image ownership and publication permissions, all author approvals, and the conference AI-use policy are resolved before submission.
