@@ -52,4 +52,5 @@ jobs:
               print('BASE64_BEGIN',stem)
               print(base64.b64encode(data).decode())
               print('BASE64_END',stem)
+              # Each paired evidence PNG shows two 224px normalized CAM panels.\n              # Convert each resized grayscale CAM panel to an accurately sourced\n              # 32x32 grid, preserving both spatial patterns for paper rendering.\n              from PIL import ImageOps\n              for side,region in [('source',(0,32,200,232)),('supervised',(200,32,400,232))]:\n                  tile=im.crop(region).convert('L').resize((32,32),Image.Resampling.LANCZOS)\n                  print('CAMGRID32',stem,side,base64.b64encode(tile.tobytes()).decode())
           PY
