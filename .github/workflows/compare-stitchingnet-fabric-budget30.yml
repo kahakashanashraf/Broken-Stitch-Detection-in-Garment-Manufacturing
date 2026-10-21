@@ -1,0 +1,67 @@
+name: Compare heldout-fabric 6 vs 30 epoch supervised runs
+on:
+  workflow_run:
+    workflows:
+      - 'Matched StitchingNet fabric-heldout supervised budget trial 6 vs 30 epochs'
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  compare:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prevent duplicate aggregate result
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view stitchingnet-fabric-budget30-comparison-v2 --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: aggregate already published' >&2; exit 1
+          fi
+      - name: Install analysis dependencies and validate failure guards
+        run: |
+          python -m pip install numpy scikit-learn Pillow torch torchvision pytest
+          python -m pip install -e code --no-deps
+          python -m pytest -q code/tests/test_fabric_budget_30.py
+      - name: Fetch all ten immutable fold releases; no model refit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for arm in imagenet synthetic; do
+            for fold in 0 1 2 3 4; do
+              OUT="/tmp/stitch_budget/input/$arm/$fold"
+              mkdir -p "$OUT"
+              TAG="stitchingnet-fabric-budget30-$arm-f$fold-v2"
+              gh release download "$TAG" --repo '${{ github.repository }}' \
+                --pattern budget_heldout_oof.csv --pattern budget_heldout_report.json --dir "$OUT"
+              test -s "$OUT/budget_heldout_oof.csv"
+              test -s "$OUT/budget_heldout_report.json"
+            done
+          done
+      - name: Audit every OOF sample, fold and paired duration difference
+        run: |
+          python code/scripts/compare_fabric_budget_30.py \
+            --root /tmp/stitch_budget/input --out /tmp/stitch_budget/result
+      - name: Release pooled descriptive metrics and per-fold provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=stitchingnet-fabric-budget30-comparison-v2
+          test -s /tmp/stitch_budget/result/fabric_budget6_vs30_comparison.json
+          gh release create "$TAG" --repo '${{ github.repository }}' \
+            --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Matched supervised StitchingNet 6 vs 30 epoch fabric-heldout OOF comparison' \
+            --notes 'Compares identical model and data partitions at fixed 6/30 epochs; five entire heldout-fabric folds per initialization, descriptive 11-fabric cluster bootstrap. Earlier StitchingNet data were inspected. NOT a new blind independent test, statistically established superiority or industrial deployment result.' \
+            /tmp/stitch_budget/result/fabric_budget6_vs30_comparison.json \
+            /tmp/stitch_budget/result/FABRIC_BUDGET6_VS30_COMPARISON.md
