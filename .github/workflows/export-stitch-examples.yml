@@ -1,0 +1,30 @@
+name: Export original sewing examples for manuscript
+on:
+  push:
+    paths: ['.github/workflows/export-stitch-examples.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python -m pip install Pillow
+      - name: Inspect and transport exact source photos
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          import base64,io,hashlib
+          from pathlib import Path
+          for fn in ['page33_image1.jpeg','page33_image2.jpeg']:
+              p=Path('paper/figures')/fn
+              raw=p.read_bytes()
+              im=Image.open(io.BytesIO(raw)).convert('RGB')
+              print('ORIGINAL',fn,im.size,hashlib.sha256(raw).hexdigest())
+              im.thumbnail((320,220),Image.Resampling.LANCZOS)
+              buff=io.BytesIO();im.save(buff,format='JPEG',quality=72,optimize=True)
+              print('BASE64START',fn)
+              print(base64.b64encode(buff.getvalue()).decode())
+              print('BASE64END',fn)
+          PY
