@@ -1,0 +1,94 @@
+name: Frozen thesis-only versus fabric-heldout Grad-CAM XAI cases
+on:
+  push:
+    paths:
+      - '.github/workflows/xai-thesis-vs-fabric.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: readonly-thesis-vs-fabric-xai-v1
+  cancel-in-progress: false
+jobs:
+  xai:
+    runs-on: ubuntu-latest
+    timeout-minutes: 110
+    env:
+      PYTHONUNBUFFERED: '1'
+      OMP_NUM_THREADS: '4'
+      MKL_NUM_THREADS: '4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Guard single immutable readonly XAI output release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='thesis-only-vs-fabric-heldout-gradcam-v1'
+          if gh release view "$TAG" --repo '${{ github.repository }}' >/dev/null 2>&1; then
+            echo 'STOP: this qualitative XAI result already exists' >&2
+            exit 1
+          fi
+      - name: Install image attribution dependencies
+        run: |
+          python -m pip install torch torchvision Pillow numpy scikit-learn
+          python -m pip install -e code --no-deps
+      - name: Download locked thesis-only weights and original StitchingNet ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/bs-xai/data /tmp/bs-xai/reports /tmp/bs-xai/heat /tmp/bs-xai/output
+          gh release download enhanced-mobilenet-224e12-v1-refit \
+            --repo '${{ github.repository }}' \
+            --pattern mobilenet_v3_224px_12epoch_dev_refit.pt --dir /tmp/bs-xai/data
+          echo '0c1eaf25ad7daea5370fd16492b811c0b90408adb3a561f47d3a5c5c48a83a81  /tmp/bs-xai/data/mobilenet_v3_224px_12epoch_dev_refit.pt' | sha256sum -c -
+          curl --location --retry 3 --retry-delay 5 --fail \
+            'https://zenodo.org/records/20352813/files/StitchingNet.zip?download=1' \
+            --output /tmp/bs-xai/data/StitchingNet.zip
+          echo '51b228d9572b925035e9e9af01c96569  /tmp/bs-xai/data/StitchingNet.zip' | md5sum -c -
+          test ! -e /tmp/bs-xai/data/test.zip
+      - name: Download EXACT ten earlier real fabric-heldout gradient maps and case reports
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for k in 0 1 2 3 4; do
+            mkdir -p "/tmp/bs-xai/reports/fold${k}" "/tmp/bs-xai/heat/fold${k}"
+            TAG="stitchingnet-fabric-heldout-synthetic-f${k}-v1"
+            gh release download "$TAG" --repo '${{ github.repository }}' \
+              --pattern fabric_heldout_report.json --dir "/tmp/bs-xai/reports/fold${k}"
+            gh release download "$TAG" --repo '${{ github.repository }}' \
+              --pattern "synthetic_fabricfold${k}_*gradcam.png" --dir "/tmp/bs-xai/heat/fold${k}"
+            test -s "/tmp/bs-xai/reports/fold${k}/fabric_heldout_report.json"
+            test "$(find "/tmp/bs-xai/heat/fold${k}" -maxdepth 1 -name '*.png' | wc -l)" -eq 2
+          done
+      - name: Generate actual thesis-only Grad-CAM, paired strips and score occlusion checks
+        run: |
+          python code/scripts/xai_thesis_vs_fabric_holdout.py \
+            --stitchingnet-zip /tmp/bs-xai/data/StitchingNet.zip \
+            --weights /tmp/bs-xai/data/mobilenet_v3_224px_12epoch_dev_refit.pt \
+            --supervised-reports /tmp/bs-xai/reports \
+            --supervised-heats /tmp/bs-xai/heat \
+            --out /tmp/bs-xai/output
+          test -s /tmp/bs-xai/output/xai_same_image_report.json
+          test -s /tmp/bs-xai/output/xai_cases.csv
+          test "$(find /tmp/bs-xai/output -maxdepth 1 -name '*.png' | wc -l)" -eq 20
+      - name: Publish case-linked XAI only (never raw StitchingNet images)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG='thesis-only-vs-fabric-heldout-gradcam-v1'
+          gh release create "$TAG" --repo '${{ github.repository }}' \
+            --target '${{ github.sha }}' --prerelease --latest=false \
+            --title 'Ten same-image real sewing Grad-CAM comparisons: thesis-only vs fabric-heldout supervised model' \
+            --notes 'Frozen real thesis-only MobileNetV3 vs previously archived synthetic-init fabric-heldout Grad-CAM on exactly matching 10 StitchingNet normal/broken binary task cases, selected by earlier supervised fold TP/FN. Includes normalized grayscale maps and equal-area feature occlusion sanity (not quantitative defect localization or causal proof). Original licensed source images NOT reuploaded. NONBLIND, case-selected, no training/tuning, no new accuracy.'
+          gh release upload "$TAG" \
+            /tmp/bs-xai/output/xai_same_image_report.json \
+            /tmp/bs-xai/output/xai_cases.csv \
+            /tmp/bs-xai/output/*.png \
+            --repo '${{ github.repository }}'

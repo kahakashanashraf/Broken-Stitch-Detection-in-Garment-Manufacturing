@@ -1,5 +1,9 @@
 # Broken Stitch Detection in Garment Manufacturing
 
+## New: thesis-only vs real-fabric heldout XAI (21 Oct 2026)
+
+A fixed, read-only **same-image Grad-CAM and occlusion case study** has been added for the thesis-only enhanced MobileNetV3 versus the **previously archived** StitchingNet other-fabric-supervised Grad-CAM model. It examines precisely ten preselected true-positive/false-negative broken-stitch cases from five fabric-heldout folds, with the same source image in both heatmaps. **No model fitting, test threshold tuning or new independent performance is claimed.** Only grayscale heatmaps and metadata are released; no source photo pixels are republished. [Code](code/scripts/xai_thesis_vs_fabric_holdout.py) · [Full protocol and limitations](docs/XAI_SAME_IMAGE_CASE_STUDY_2026_10_21.md) · [Automatic workflow](.github/workflows/xai-thesis-vs-fabric.yml) · [XAI output Release once successful](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/releases/tag/thesis-only-vs-fabric-heldout-gradcam-v1).
+
 [![Unit tests](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/workflows/tests.yml/badge.svg)](https://github.com/kahakashanashraf/Broken-Stitch-Detection-in-Garment-Manufacturing/actions/workflows/tests.yml)
 
 ## Current verified result: target-data supervised fabric-disjoint adaptation (20 Oct 2026)
