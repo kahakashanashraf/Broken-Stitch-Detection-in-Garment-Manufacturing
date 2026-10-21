@@ -38,9 +38,7 @@ jobs:
           root=Path('/tmp/real_xai_paper')
           for stem in ['fold0_true_positive_paired_gradcam','fold2_false_negative_paired_gradcam']:
               raw=(root/(stem+'.png')).read_bytes()
-              assert raw[:8]==b'\x89PNG\r
-\x1a
-'
+              assert raw.startswith(bytes.fromhex('89504e470d0a1a0a'))
               im=Image.open(io.BytesIO(raw)).convert('RGB')
               print('EVIDENCE_ORIGINAL',stem,len(raw),hashlib.sha256(raw).hexdigest(),im.size)
               # Crop nothing. Resizing down is for paper figure reproduction only.
