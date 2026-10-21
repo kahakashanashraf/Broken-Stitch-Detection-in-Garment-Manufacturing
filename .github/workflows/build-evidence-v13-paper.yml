@@ -1,0 +1,80 @@
+name: Build IEEE broken-stitch v13 with verified figures
+on:
+  push:
+    paths:
+      - 'paper/ICEEICT2027_BrokenStitch_v13_Introduction_Flow.tex'
+      - 'paper/reproduce_v13_figures.py'
+      - '.github/workflows/build-evidence-v13-paper.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: build-stitch-paper-v13
+  cancel-in-progress: false
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install plotting and LaTeX dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install numpy Pillow matplotlib
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-publishers texlive-fonts-recommended poppler-utils
+      - name: Fetch immutable real Grad-CAM evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/stitch-v13-xai
+          gh release download thesis-only-vs-fabric-heldout-gradcam-v1 \
+            --repo '${{ github.repository }}' \
+            --pattern fold0_true_positive_paired_gradcam.png \
+            --pattern fold2_false_negative_paired_gradcam.png \
+            --dir /tmp/stitch-v13-xai
+      - name: Rebuild figures from checksum-locked real data
+        run: |
+          set -euo pipefail
+          python paper/reproduce_v13_figures.py \
+            --xai-dir /tmp/stitch-v13-xai \
+            --out-dir paper/figures_v13
+      - name: Compile and audit anonymous IEEE A4 manuscript
+        run: |
+          set -euo pipefail
+          cd paper
+          DOC=ICEEICT2027_BrokenStitch_v13_Introduction_Flow
+          pdflatex -halt-on-error -interaction=nonstopmode "$DOC.tex" >/tmp/stitch_v13_1.log
+          pdflatex -halt-on-error -interaction=nonstopmode "$DOC.tex" >/tmp/stitch_v13_2.log
+          test "$(pdfinfo "$DOC.pdf" | awk '/^Pages:/{print $2}')" -le 6
+          test "$(stat -c%s "$DOC.pdf")" -lt 3000000
+          pdfinfo "$DOC.pdf" | grep -q 'Page size:.*A4'
+          if grep -E 'Citation .* undefined|Reference .* undefined|LaTeX Warning:.*undefined' /tmp/stitch_v13_2.log; then
+            echo 'STOP: unresolved citation/reference' >&2; exit 1
+          fi
+          if grep -q 'Overfull \\hbox' /tmp/stitch_v13_2.log; then
+            echo 'STOP: overfull TeX box needs layout review' >&2; exit 1
+          fi
+          if pdffonts "$DOC.pdf" | grep -q 'Type 3'; then
+            echo 'STOP: Type 3 font in PDF' >&2; exit 1
+          fi
+          if pdftotext "$DOC.pdf" - | grep -Eqi 'Johora Bibi Juhi|Kahakashan Ashraf|Dipra Das'; then
+            echo 'STOP: anonymous submission identity check failed' >&2; exit 1
+          fi
+          sha256sum "$DOC.pdf" > V13_PDF_SHA256.txt
+          pdfinfo "$DOC.pdf" | grep -E 'Pages:|Page size:|File size:'
+      - name: Publish compiled manuscript and real image figures to repository
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add paper/ICEEICT2027_BrokenStitch_v13_Introduction_Flow.pdf \
+                  paper/V13_PDF_SHA256.txt paper/figures_v13/*.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish v13 compiled IEEE manuscript and verified data figures'
+            git push
+          fi
