@@ -1,0 +1,43 @@
+name: Package v15 paper for Overleaf
+on:
+  push:
+    paths:
+      - '.github/workflows/package-stitch-v15-overleaf.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Package complete editable v15 LaTeX project
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          root=Path('paper')
+          names=[
+            'ICEEICT2027_BrokenStitch_v15_Real_Input_Preprocessing.tex',
+            'figures_v13/heldout_fabric_macro_f1.png',
+            'figures_v13/verified_cam_colorized_D_B.png',
+            'figures_v15/original_stitch_preprocessing.png'
+          ]
+          for n in names:
+              assert (root/n).is_file(),n
+          target=Path('/tmp/ICEEICT2027_BrokenStitch_v15_Overleaf_Project.zip')
+          with ZipFile(target,'w',compression=ZIP_DEFLATED) as z:
+              for name in names:z.write(root/name,arcname=name)
+          print('ARCHIVE',target,target.stat().st_size)
+          PY
+      - name: Publish ZIP as release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG=stitch-paper-v15-overleaf
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title 'IEEE broken-stitch v15 editable Overleaf sources' --notes 'LaTeX plus original image preprocessing and evidence figures. Not a substitute for double-blind screening.'
+          fi
+          gh release upload "$TAG" /tmp/ICEEICT2027_BrokenStitch_v15_Overleaf_Project.zip --clobber
